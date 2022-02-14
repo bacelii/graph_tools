@@ -1,0 +1,709 @@
+"""
+Useful python functions main from networkx
+for estimating network stats
+
+Notes: most of functions orignially from /old_modules/graph_statistics_and_simulations.py
+
+packages that need to be installed: 
+1) ndlib
+2) powerlaw
+"""
+
+
+import networkx as nx
+import numpy as np
+import time
+import graph_visualizations as gviz
+import networkx_utils as xu
+
+
+
+
+# ------------- Degree Distributions ------------
+import numpy as np
+def degree_distribution(G,nodes=None,percentile=None,
+                        degree_type="in_and_out",**kwargs):
+    """
+    Purpose: To find the degree distribution of a graph
+    (and optionally apply a node mask or restrict to a percentile of nodes)
+    
+    """
+    if nodes is None:
+        nodes = list(G.nodes())
+    
+    dist = np.array(xu.get_node_degree(G,nodes,degree_type=degree_type))
+    
+    if percentile is not None:
+        dist = dist[dist<np.percentile(dist,percentile)]
+        
+    return dist
+
+
+def degree_distribution_analysis(G,
+                                 graph_title="Graph (No Title)",
+                    degree_type_list = ["in_and_out","in","out"],
+                    percentile = 99.5,
+                    verbose=True,
+                    plot_distributions=True):
+    """
+    Purpose: Will get statistics and possibly 
+    plot degree distribution data for a graph
+
+
+    """
+
+
+    degree_dist_stats = dict()
+
+    for k in degree_type_list:
+        try:
+            curr_degree_distr = gs.degree_distribution(G,
+                                                       degree_type=k,
+                                                        percentile=percentile)
+        except:
+            if plot_distributions:
+                print(f"{graph_title} {k} distribution can't be graphed")
+            degree_dist_stats[f"{k}_mean"] = None
+            degree_dist_stats[f"{k}_median"] = None
+            continue
+
+        curr_degree_distr_mean = np.mean(curr_degree_distr)
+        curr_degree_distr_median = np.median(curr_degree_distr)
+
+        if verbose:
+            import numpy_utils as nu
+            print(f"{graph_title} {k} degree distribution mean = {nu.comma_str(curr_degree_distr_mean)},\n"
+                  f"{graph_title} {k} degree distribution median = {nu.comma_str(curr_degree_distr_median)}")
+
+        degree_dist_stats[f"{k}_mean"] = curr_degree_distr_mean
+        degree_dist_stats[f"{k}_median"] = curr_degree_distr_median
+                                   
+        if plot_distributions:
+            gviz.plot_degree_distribution(G,
+                                         degree_type=k,
+                                         title_append=graph_title,
+                                          degree_distribution=curr_degree_distr,
+                                         print_degree_distribution_stats=False)
+    return degree_dist_stats
+
+
+#-------------- Functions that are available for graph stats ------------------ #
+#adding attributes to functions
+class run_options:
+    def __init__(self, directional = False,multiedge = False):
+        self.directional = directional
+        self.multiedge = multiedge
+
+    def __call__(self, f):
+        f.directional = self.directional
+        f.multiedge = self.multiedge
+        return f
+    
+    
+# ------------- basic general stats ----------------
+from networkx.algorithms import approximation as app
+from networkx.algorithms import distance_measures as dist
+
+@run_options(directional=False,multiedge=False)
+def n_triangles(G):
+    triangle_dict = nx.triangles(G)
+    n_triangles = np.sum(list(triangle_dict.values()))/3
+    return n_triangles
+
+@run_options(directional=False,multiedge=False)
+def n_edges_empirical(G):
+    return len(G.edges())
+
+@run_options(directional=False,multiedge=False)
+def longest_shortest_path(G):
+    return dist.diameter(G)
+
+diameter = longest_shortest_path
+
+@run_options(directional=True,multiedge=False)
+def transitivity(G,**kwargs):
+    """
+    transitivity: Fraction of all possible traingles present in G
+    Triad = 2 edges with a shared vertex
+
+    Transitivity = 3* # of triangles/ # of traids
+
+    """
+    return nx.transitivity(G)
+
+@run_options(directional=True,multiedge=True)
+def node_connectivity(G,**kwargs):
+    return app.node_connectivity(G)
+
+@run_options(directional=False,multiedge=True)
+def size_maximum_clique(G,**kwargs):
+    """
+    clique is just subset of vertices group where every
+    vertex in group is connected (subgraph induced is complete)
+
+    Maximum clique = clique of the largest size in a graph
+    clique number = number of vertices in a maxium clique
+
+    """
+    return nx.graph_clique_number(G)
+
+@run_options(directional=False,multiedge=True)
+def n_maximal_cliques(G,**kwargs):
+    """
+    clique is just subset of vertices group where every
+    vertex in group is connected (subgraph induced is complete)
+
+    Maximal clique = clique that cannot be extended by including one or more adjacent vertex 
+    (aka not subset of larger clique)
+    Maximum clique = clique of the largest size in a graph
+    clique number = number of vertices in a maxium clique
+
+    """
+    return nx.graph_number_of_cliques(G)
+
+@run_options(directional=True,multiedge=True)
+def average_degree_connectivity(G,**kwargs):
+    """ Returns dictionary that maps nodes with a certain degree to the average degree of the nearest neightbors"""
+    return nx.average_degree_connectivity(G)
+
+
+@run_options(directional=True,multiedge=False)
+def average_clustering(G,**kwargs):
+    """ 
+    local clustering: theoretically the fraction of traingles that actually exist / 
+                                                    all possible traingles in its neighborhood
+    How it is computed: 
+    1) choose random node
+    2) choose 2 neighbors at random
+    3) check if traingle (if yes increment traingle counter)
+    4) Repeat and compute number with triangle_counter/ trials
+
+    """
+    return nx.average_clustering(G)
+
+@run_options(directional=True,multiedge=True)
+def min_weighted_vertex_cover_len(G,**kwargs):
+    """ 
+    Returns length of Minimum number of vertices so that all edges are coincident on at least one vertice
+
+    """
+    return len(app.min_weighted_vertex_cover(G))
+
+
+@run_options(directional=False,multiedge=False)
+def tree_number(G,**kwargs):
+    """ 
+    Returns an approximation of the tree width of the graph (aka how tree-like it is):
+    The lower the value the more tree-like the graph is
+
+    """
+    return app.treewidth_min_degree(G)[0]
+
+# ------ newly added statistics 3/19 ------------ #
+
+@run_options(directional=True,multiedge=True)
+def degree_distribution_mean(G,**kwargs):
+    sequences = [k for v,k in dict(G.degree).items()]
+    return np.mean(sequences)
+
+
+@run_options(directional=True,multiedge=True)
+def degree_distribution_mean(G,**kwargs):
+    sequences = [k for v,k in dict(G.degree).items()]
+    return np.mean(sequences)
+
+
+@run_options(directional=False,multiedge=False)
+def number_connected_components(G,**kwargs):
+    return nx.number_connected_components(G)
+
+@run_options(directional=False,multiedge=False)
+def largest_connected_component_size(G,**kwargs):
+    Gcc = sorted(nx.connected_components(G), key=len, reverse=True)
+    return len(Gcc[0])
+
+
+@run_options(directional=False,multiedge=False)
+def largest_connected_component_size(G,**kwargs):
+    Gcc = sorted(nx.connected_components(G), key=len, reverse=True)
+    return len(Gcc[0])
+
+# ------------- New Functions that were added 3/25 ------------------------ #
+@run_options(directional=False,multiedge=False)
+def inverse_average_shortest_path(G):
+    Gcc = sorted(nx.connected_components(G), key=len, reverse=True)
+    sp = nx.average_shortest_path_length(nx.subgraph(G,Gcc[0]))
+    if sp > 0:
+        return 1/sp
+    else:
+        return None
+
+    
+    
+    
+
+
+# - For the percolation - #
+def _get_vertex_order(G,selection_type="random"):
+    if selection_type == "random":
+        return np.random.permutation(list(G.nodes))
+    elif selection_type == "degree":
+        """ Will organize from highest to lowest degree"""
+        degree_dict = dict()
+        for k,v in G.degree():
+            if v not in degree_dict.keys():
+                degree_dict[v] = [k]
+            else:
+                degree_dict[v].append(k)
+        degree_dict
+
+        #get the order of degree
+        order_degrees = np.sort(list(degree_dict.keys()))
+
+        node_order = []
+        for k in order_degrees:
+            node_order += list(np.random.permutation(degree_dict[k]))
+
+        return node_order
+    else:
+        raise Exception("Invalid Selection Type")
+
+from tqdm import tqdm
+
+def run_site_percolation(G,vertex_order_type="random",n_iterations=1000):
+    total_runs = []
+
+    for y in tqdm(range(0,n_iterations)):
+        current_run_results = [0,1]
+        """
+        1) Start with empty network. Number of clusters, c = 0, currently in network
+        Choose at random the order in which vertices will be added to the network
+        """
+
+        clusters=dict() #starting out the clusters list as empyt
+        vertex_order = _get_vertex_order(G,vertex_order_type)
+
+
+        """
+        2) Add the next vertex in list to the network initially with no edges
+        """
+        vertex_labels = dict()
+        for i,v in enumerate(vertex_order):
+            #print(f"Working on vertex {v}")
+
+            """ 2b)
+            - increase the cluster count by 1 (because the new vertex is initially a cluster of its own)
+            - Make the cluster size of one
+
+            """
+
+            try:
+                max_index_plus_1 = np.max(list(clusters.keys())) + 1
+                clusters[max_index_plus_1] = 1
+                vertex_labels[v] = max_index_plus_1
+            except:
+                clusters[0] = 1
+                vertex_labels[v] = 0
+                continue
+
+            """
+            3) Go through the edges attached to newly added vertex and add the edges where the other 
+            vertex already exists in the network
+
+            4) For each edge added, check if the vertices have the same cluster group number:
+            - if yes then do nothing
+            - if no, relabel the smaller cluster the same cluster number as the bigger cluster number
+            - update the sizes of the 2 clusters from which formed
+            """
+            already_added_v = set(vertex_order[:i]).intersection(set(G[v].keys()))
+            for a_v in already_added_v:
+                if vertex_labels[a_v] != vertex_labels[v]:
+                    index_max = np.argmax([clusters[vertex_labels[a_v]],clusters[vertex_labels[v]]])
+                    if index_max == 0: #need to change all the labels with v
+                        replaced_cluster = vertex_labels[v]
+                        indexes_to_change = [jj for jj in vertex_labels.keys() if vertex_labels[jj] == vertex_labels[v]]
+                        final_cluster = vertex_labels[a_v]
+                    else:
+                        replaced_cluster = vertex_labels[a_v]
+                        indexes_to_change = [jj for jj in vertex_labels.keys() if vertex_labels[jj] == vertex_labels[a_v]]
+                        final_cluster = vertex_labels[v]
+
+                    #change the labels
+                    for vv in indexes_to_change:
+                        vertex_labels[vv] = final_cluster
+
+                    replaced_size = clusters.pop(replaced_cluster)
+                    clusters[final_cluster] += replaced_size
+
+            current_run_results.append(np.max([v for v in clusters.values()]))
+
+
+            #Done adding that vertex and will continue on to next vertex
+            #print(f"clusters = {clusters}")
+
+            total_runs.append(current_run_results)
+    total_runs = np.array(total_runs)
+    
+    from scipy.special import comb
+    n = len(G.nodes)
+    S_r = np.mean(total_runs,axis=0)
+    #calculate s_phi : average largest cluster size as a functin of the occupancy probability
+    phi = np.arange(0,1.05,0.05)
+    r = np.arange(0,n+1,1)
+    s_phi = [np.sum([comb(n, r_curr, exact=True)*(phi_curr**r_curr)*((1-phi_curr)**(n- r_curr))*S_r_curr
+                        for r_curr,S_r_curr in zip(r,S_r)]) for phi_curr in phi]
+    s_phi = np.array(s_phi)/n
+    
+    return s_phi,phi
+    
+import networkx as nx
+
+
+@run_options(directional=False,multiedge=False)
+def random_degree_site_percolation(G,n_iterations=200):
+    random_degree_site_percolation.stat_names = ["area_above_identity_random_percol",
+                                                "area_below_identity_random_percol",
+                                                "area_above_identity_degree_percol",
+                                                "area_below_identity_degree_percol"]
+    s_phi_barabasi_rand,phi_barabasi_rand= run_site_percolation(G,"random",n_iterations)
+    s_phi_barabasi_degree,phi_barabasi_degree= run_site_percolation(G,"degree",n_iterations)
+
+    rand_diff = s_phi_barabasi_rand - phi_barabasi_rand
+    degree_diff = s_phi_barabasi_degree - phi_barabasi_degree
+
+    dx = phi_barabasi_rand[1]-phi_barabasi_rand[0]
+
+    rand_diff_positive = np.where(rand_diff>0)[0]
+    rand_diff_negative = np.where(rand_diff<= 0)[0]
+    degree_diff_positive = np.where(degree_diff>0)[0]
+    degree_diff_negative = np.where(degree_diff<=0)[0]
+
+    return (np.trapz(rand_diff[rand_diff_positive],dx=dx),
+     np.trapz(rand_diff[rand_diff_negative],dx=dx),
+     np.trapz(degree_diff[degree_diff_positive],dx=dx),
+     np.trapz(degree_diff[degree_diff_negative],dx=dx))
+
+# - End of Percolation - #
+
+# - Start of Beta Epidemic Stat -- #
+    
+import ndlib
+import networkx as nx
+import numpy as np
+
+import ndlib.models.ModelConfig as mc
+import ndlib.models.epidemics as ep
+
+def pandemic_beta_average(
+                                graph,
+                                average_iterations=5,
+                                n_time_iterations = 200,
+                                initial_infected_prop = 0.05,
+                                gamma = 0.01,
+                                beta_start = 0.00001,
+                                current_jump=0.001,
+                                pandemic_threshold = 0.7,
+                                pandemic_dev = 0.01,
+                                max_iterations = 50,
+                                use_optimized_beta_finder=False
+                              ):
+    arg_dict = dict(
+        n_time_iterations = n_time_iterations,
+        initial_infected_prop = initial_infected_prop,
+        gamma = gamma,
+        beta_start = beta_start,
+        current_jump=current_jump,
+        pandemic_threshold = pandemic_threshold,
+        pandemic_dev = pandemic_dev,
+        max_iterations=max_iterations
+            )
+    
+    pandemic_beta = []
+    for i in range(0,average_iterations):
+        print(f"\n    Working on Run {i}")
+        percent_affected_history = []
+        retry_counter = 0
+        max_retry = 3
+        while len(percent_affected_history)<= 1:
+            percent_affected_history,beta_history = find_pandemic_beta(graph,**arg_dict)
+            retry_counter += 1
+            if retry_counter > max_retry:
+                print(f"Could not find right Beta after {max_retry} tries: returning Last value hit: {beta_history[0]}")
+                return beta_history[0]
+                #raise Exception(f"Could not find right Beta after {max_retry} tries")
+        optimal_beta = beta_history[-1]
+        
+        pandemic_beta.append(optimal_beta)
+        """
+        now adjust the beta_start and the current jump based on the history 
+        before the next run
+        
+        Rule: Find the optimal beta
+        starting_beta = optimal_beta - 3*last_jump
+        
+        
+        """ 
+        if use_optimized_beta_finder:
+            if len(beta_history) >= 2:
+                print(f"beta_history= {beta_history}")
+                last_jump_size = np.abs(beta_history[-2] - beta_history[-1])
+                arg_dict["beta_start"] = optimal_beta - 2*last_jump_size
+                arg_dict["current_jump"] = 2*last_jump_size
+            
+        
+    return np.mean(pandemic_beta)
+
+def find_pandemic_beta(graph,
+                       n_time_iterations = 200,
+                        initial_infected_prop = 0.05,
+                        gamma = 0.01,
+                        beta_start = 0.00001,
+                        current_jump=0.001,
+                        pandemic_threshold = 0.7,
+                        pandemic_dev = 0.01,
+                       max_iterations=50
+                       ):
+    
+    print_flag = False
+    
+    def _calculate_percent_affected(trends):
+        n_recovered = trends[0]["trends"]["node_count"][2][-1]
+        n_infected = trends[0]["trends"]["node_count"][1][-1]
+        percent_affected = (n_recovered + n_infected)/len(graph.nodes)
+        return percent_affected
+
+    print(f"\n\n---- New Run: Finding Beta for [{pandemic_threshold - pandemic_dev}, {pandemic_threshold + pandemic_dev}]\n"
+         f"    Starting with beta_start={beta_start},current_jump={current_jump}")
+    percent_affected = 0
+    counter = 0
+    beta = beta_start
+    
+    beta_history=[]
+    percent_affected_history = []
+    
+    
+    while (percent_affected > pandemic_threshold + pandemic_dev
+           or percent_affected < pandemic_threshold - pandemic_dev):
+        if print_flag:
+            print(f"Current loop {counter}")
+        counter += 1
+        if counter > max_iterations:
+            print("Max iterations hit before convergence on Beta, going to try again")
+            return [],[beta]
+
+        model = ep.SIRModel(graph)
+        #Setting the model configuration
+        config = mc.Configuration()
+        config.add_model_parameter('beta', beta)
+        config.add_model_parameter('gamma', gamma)
+        config.add_model_parameter("fraction_infected", initial_infected_prop) #not setting the initial nodes that are infected but just the initial fraction
+        model.set_initial_status(config)
+
+        # Simulation
+        iterations = model.iteration_bunch(n_time_iterations) 
+        trends = model.build_trends(iterations) # builds the  dict_keys(['node_count', 'status_delta']) time series
+        percent_affected = _calculate_percent_affected(trends)
+
+        beta_history.append(beta)
+        percent_affected_history.append(percent_affected)
+        
+        if print_flag:
+            print(f"With beta = {beta}, percent_affected = {percent_affected}, current_jump={current_jump}")
+        #Adjust the Beta
+        if percent_affected < pandemic_threshold - pandemic_dev:
+            beta += np.min((1,current_jump))
+        elif percent_affected > pandemic_threshold + pandemic_dev:
+            #print("beta_history[-2] = " + str(beta_history[-2]))
+            if percent_affected_history[-2] < pandemic_threshold - pandemic_dev: #if jumped over the answer
+                if print_flag:
+                    print("Jumped over answer")
+                beta = np.max((beta - current_jump/2,0))
+                current_jump = current_jump/2 - current_jump*0.01
+                if current_jump < 0.000001:
+                    current_jump = 0.000001
+            else:
+                beta = np.max((beta - current_jump,0))
+            
+        else:
+            break
+    return percent_affected_history,beta_history
+
+
+@run_options(directional=False,multiedge=False)
+def pandemic_beta(graph):
+    print("\n\n-------Starting Pandemic Beta -------")
+    print(f"n_edges = {len(graph.edges())}, n_nodes = {len(graph.nodes)}")
+    start_time = time.time()
+    final_beta_average = pandemic_beta_average(graph)
+    print(f"final_beta_average = {final_beta_average}")
+    print(f"Total time for optimized = {time.time() - start_time}\n")
+    
+    return final_beta_average
+
+
+
+# - End of Beta Epidemic Stat -- #
+
+import scipy
+
+#eigenvalue measurements
+@run_options(directional=False,multiedge=False)
+def largest_adj_eigen_value(G1):
+    Adj = nx.convert_matrix.to_numpy_matrix(G1)
+    return np.real(np.max(np.linalg.eigvals(Adj)))
+
+@run_options(directional=False,multiedge=False)
+def smallest_adj_eigen_value(G1):
+    Adj = nx.convert_matrix.to_numpy_matrix(G1)
+    return np.real(np.min(np.linalg.eigvals(Adj)))
+
+@run_options(directional=False,multiedge=False)
+def largest_laplacian_eigen_value(G1):
+    laplacian = scipy.sparse.csr_matrix.toarray(nx.laplacian_matrix(G1))
+    return np.real(np.max(np.linalg.eigvals(laplacian)))
+
+"""
+SHOULDN'T REALLY HAVE TO USE THIS BECAUSE IT WILL ALWAYS BE 0
+"""
+@run_options(directional=False,multiedge=False)
+def smallest_laplacian_eigen_value(G1):
+    laplacian = scipy.sparse.csr_matrix.toarray(nx.laplacian_matrix(G1))
+    return np.real(np.min(np.linalg.eigvals(laplacian)))
+
+#*** THIS IS ALSO CALLED THE ALGEBRAIC CONNECTIVITY
+@run_options(directional=False,multiedge=False)
+def second_smallest_laplacian_eigen_value(G1):
+    laplacian = scipy.sparse.csr_matrix.toarray(nx.laplacian_matrix(G1))
+    sorted_eig_vals = np.sort(np.real(np.linalg.eigvals(laplacian)))
+    return sorted_eig_vals[1]
+
+from itertools import chain
+@run_options(directional=False,multiedge=False)
+def top_heavy_percentage(G1,top_percentage = 0.90):
+    degree_sequence = np.array(G1.degree())[:,1]
+    ordered_nodes = np.argsort(degree_sequence)
+
+
+    index_to_start = np.ceil(len(degree_sequence)*top_percentage).astype("int")
+    #print(f"index_to_start = {index_to_start}")
+    top_nodes_to_keep = ordered_nodes[index_to_start:]
+    #print(f"top_nodes_to_keep = {top_nodes_to_keep}")
+
+    nodes_nbrs = G1.adj.items()
+    top_neighbors = [set(v_nbrs) for v,v_nbrs in nodes_nbrs if v in top_nodes_to_keep]
+    top_neighbors.append(set(top_nodes_to_keep))
+
+    unique_top_neighbors = set(chain.from_iterable(top_neighbors))
+    return len(unique_top_neighbors)/len(G1)
+
+@run_options(directional=False,multiedge=False)
+def critical_occupation_probability(G1):
+    degree_sequence = np.array(G1.degree())[:,1]
+    return np.mean(degree_sequence)/(np.mean(degree_sequence)**2 - np.mean(degree_sequence))
+
+
+@run_options(directional=False,multiedge=False)
+def rich_club_transitivity(G):
+    """
+    Computes the triad closure percentage between only those nodes with same or higher degree
+    """
+    nodes_nbrs = G.adj.items()
+
+    triads = 0
+    triangles = 0
+    degree_lookup = dict(G.degree())
+
+    for v,v_nbrs in nodes_nbrs:
+        v_nbrs_degree = [vnb for vnb in v_nbrs if degree_lookup[vnb] >= degree_lookup[v]]
+        vs=set(v_nbrs_degree)-set([v]) #getting all the neighbors of the node (so when put in different combinations these could be triads)
+        local_triangles=0
+        local_triads = len(vs)*(len(vs) - 1)
+        if local_triads<1:
+            #print("No local triads so skipping")
+            continue
+        for w in vs:
+            ws = set(G[w])-set([w]) #gets all the neighbors of a neighbor except itself
+            local_triangles += len(vs.intersection(ws)) #finds out how many common neighbors has between itself and main node
+
+        #print(f"For neuron {v}: Triads = {local_triads/2}, Triangles = {local_triangles/2}, transitivity = {local_triangles/local_triads}")
+        triads += local_triads 
+        triangles+= local_triangles
+    
+    #print(f"Total: Triads = {triads/2}, Triangles = {triangles/2}, transitivity = {triangles/triads}")
+    if triads > 0:
+        return triangles/triads
+    else:
+        return None
+
+
+# --- Powerlaw stats --- #
+
+import powerlaw
+
+def get_degree_distribution(G):
+    return np.array(G.degree())[:,1]
+
+@run_options(directional=False,multiedge=False)
+def power_law_alpha_sigma(G):
+    #get the degree distribution
+    power_law_alpha_sigma.stat_names = ["power_law_alpha",
+                                        "power_law_sigma"]
+    fit = powerlaw.Fit(get_degree_distribution(G))
+    return fit.power_law.alpha, fit.power_law.sigma
+
+@run_options(directional=False,multiedge=False)
+def power_law_sigma(G):
+    #get the degree distribution
+
+    fit = powerlaw.Fit(get_degree_distribution(G))
+    return fit.power_law.sigma
+
+@run_options(directional=False,multiedge=False)
+def power_law_alpha(G):
+    #get the degree distribution
+
+    fit = powerlaw.Fit(get_degree_distribution(G))
+    return fit.power_law.alpha
+
+@run_options(directional=False,multiedge=False)
+def power_exp_fit_ratio(G):
+    """
+    Will return the loglikelihood ratio of the power and exponential graph
+    R:
+    Will be positive if power is more likely
+            negative    exponential
+    
+    p: significance of fit
+    """
+    #get the degree distribution
+    power_exp_fit_ratio.stat_names = ["power_exp_LL_ratio",
+                                        "power_exp_LL_ratio_sign"]
+    
+    fit = powerlaw.Fit(get_degree_distribution(G))
+    R,p = fit.distribution_compare("power_law",
+                                                 "exponential",
+                                                normalized_ratio=True)
+    return R
+
+@run_options(directional=False,multiedge=False)
+def trunc_power_stretched_exp_fit_ratio(G):
+    """
+    Will return the loglikelihood ratio of the power and exponential graph
+    R:
+    Will be positive if power is more likely
+            negative    exponential
+    
+    p: significance of fit
+    """
+    #get the degree distribution
+    trunc_power_stretched_exp_fit_ratio.stat_names = ["trunc_power_stretched_exp_LL_ratio",
+                                        "trunc_power_stretched_exp_LL_ratio_sign"]
+    
+    fit = powerlaw.Fit(get_degree_distribution(G))
+    R,p = fit.distribution_compare("truncated_power_law",
+                                                 "stretched_exponential",
+                                                normalized_ratio=True)
+    return R
+
+
+import graph_statistics as gs

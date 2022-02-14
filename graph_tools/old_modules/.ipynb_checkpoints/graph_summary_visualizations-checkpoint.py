@@ -1,17 +1,15 @@
 import matplotlib.pyplot as plt
 import networkx as nx
-import graph_statistics as gs
+import graph_analysis as ga
 import numpy as np
 
 
 import matplotlib_utils as mu
 import matplotlib
-
     
-
-def plot_degree_distribution(G,degree_type="in_and_out",
-                             density=False,
-                             logscale=True,
+    
+def d(G,degree_type="in_and_out",
+                             density=False,logscale=True,
                              n_bins=50,
                              bin_width=None,
                              bin_max = None,
@@ -29,7 +27,7 @@ def plot_degree_distribution(G,degree_type="in_and_out",
     
     """
     if degree_distribution is None:
-        degree_distribution_filtered = gs.degree_distribution(G,
+        degree_distribution_filtered = ga.degree_distribution(G,
                                                        degree_type=degree_type,
                                                        **kwargs)
     else:
@@ -74,7 +72,32 @@ def plot_degree_distribution(G,degree_type="in_and_out",
             f"Median {degree_type} Degree = {nu.comma_str(np.round(median_orig_multi_di,2))}")
         
         
-        
+import matplotlib.pyplot as plt
+def graph_to_soma_to_soma_distance(G):
+    """
+    Assuming that the nodes of graph have the xyz of the soma centers stored inside of them,
+    can compute the soma soma distance of the different connections
+    
+    Pseudocode:
+    
+    """
+#     total_unique_edges = np.array(list(G.edges()))
+#     edges_mask = np.all(total_unique_edges>0,axis=1)
+#     soma_distances = np.array([[nuc_id_to_center[k],nuc_id_to_center[v]] for k,v in total_unique_edges[edges_mask]])
+#     soma_distances_norm = np.linalg.norm(soma_distances[:,0,:] - soma_distances[:,1,:],axis=1)
+
+    
+#     fig,ax = plt.subplots(1,1)
+#     ax.hist(soma_distances_norm/1000,bins=100,density=False)
+#     ax.set_title("Soma to Soma Distance of Unique Direct Connections \n After Auto Proofreading")
+#     ax.set_xlabel("Soma to Soma Distance (um)")
+#     ax.set_ylabel("Counts")
+#     plt.yscale("log")
+#     plt.xscale("linear")
+#     plt.show()
+    
+    pass
+
 import pandas_utils as pu
 import numpy_utils as nu
 import pandas as pd
@@ -124,4 +147,5 @@ def graph_stats_dicts_to_plt_table(stats_list,graph_names_list):
                                 font_size=20)
     
 import graph_visualizations as gviz
-        
+    
+    
