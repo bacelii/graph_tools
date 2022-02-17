@@ -44,7 +44,9 @@ def degree_distribution_analysis(G,
                     degree_type_list = ["in_and_out","in","out"],
                     percentile = 99.5,
                     verbose=True,
-                    plot_distributions=True):
+                    plot_distributions=True,
+                                 **kwargs
+                                ):
     """
     Purpose: Will get statistics and possibly 
     plot degree distribution data for a graph
@@ -83,7 +85,9 @@ def degree_distribution_analysis(G,
                                          degree_type=k,
                                          title_append=graph_title,
                                           degree_distribution=curr_degree_distr,
-                                         print_degree_distribution_stats=False)
+                                         print_degree_distribution_stats=False,
+                                          **kwargs
+                                         )
     return degree_dist_stats
 
 
@@ -117,6 +121,12 @@ def n_edges_empirical(G):
 @run_options(directional=False,multiedge=False)
 def longest_shortest_path(G):
     return dist.diameter(G)
+
+
+@run_options(directional=False,multiedge=False)
+def average_shortest_path_length(G):
+    return nx.average_shortest_path_length(G)
+
 
 diameter = longest_shortest_path
 
