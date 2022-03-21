@@ -127,6 +127,54 @@ def graph_stats_dicts_to_plt_table(stats_list,graph_names_list):
     return pu.df_to_render_table(df,transpose=True,col_width=3.2,row_height=0.9,
                                 fontsize_header=14,
                                 font_size=20)
+
+def draw_G_with_color_array(
+    G,
+    colors,
+    pos = None,
+    vmin = None,
+    vmax = None,
+    cmap = plt.cm.coolwarm,
+    ):
+    """
+    Purpose: To graph the colors associated with an array referencing
+    the individual nodes of a graph
+    
+    ex: 
+    eigvals,eigvecs = laplacian_eig_vals_vecs(G)
+    draw_G_with_color_array(
+        G,
+        eigvecs[:,1]
+    )
+    """
+    
+    colors = np.array(colors).reshape(-1)
+    
+    if vmin is None:
+        vmin = np.min(colors)
+    if vmax is None:
+        vmax = np.max(colors)
+        
+    if pos is None:
+        pos = nx.spring_layout(G)
+        
+    nx.draw_networkx(
+        G, 
+        pos=pos, 
+        node_color=colors,
+        cmap=cmap, 
+        vmin=vmin, 
+        vmax=vmax, 
+        with_labels=False)
+    
+    sm = plt.cm.ScalarMappable(
+        cmap=cmap,
+        norm=plt.Normalize(vmin=vmin, vmax=vmax))
+    sm.set_array([])
+    cbar = plt.colorbar(sm)
+    plt.show()
+    
+
     
 import graph_visualizations as gviz
         

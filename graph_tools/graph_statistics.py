@@ -715,5 +715,17 @@ def trunc_power_stretched_exp_fit_ratio(G):
                                                 normalized_ratio=True)
     return R
 
+import numpy as np
+def laplacian(G,dense = True):
+    L = nx.laplacian_matrix(G)
+    if dense:
+        L = L.todense()
+    return L
+    
+def laplacian_eig_vals_vecs(G):
+    L = laplacian(G)
+    eigvals, eigvecs = np.linalg.eigh(L)
+    return eigvals, eigvecs
+
 
 import graph_statistics as gs
