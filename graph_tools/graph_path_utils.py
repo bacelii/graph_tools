@@ -14,6 +14,7 @@ def shortest_path_distance_samples(
     title_prefix = None,#"Minnie65 (E only)",
     log_scale = True,
     verbose = True,
+    #ignore_no_path = True,
     ):
     """
     Purpose: To compute the shortest path distance
@@ -37,7 +38,7 @@ def shortest_path_distance_samples(
     target_names = np.random.choice(nodes,int(n_samples*2),p=nodes_weight)
     
     path_lengths = []
-    counter = 0
+    no_paths = 0
     #while len(path_lengths) < n_samples:
     for i in tqdm(range(n_samples)):
 #         if verbose:
@@ -51,16 +52,17 @@ def shortest_path_distance_samples(
             path = nx.shortest_path(G,s,t,weight = edge_weight)
             path_lengths.append(len(path)-1)
         except:
-            pass
+            no_paths += 1
         
         #counter += 1 
     
     #4) Compute the mean and standard deviation
     if verbose:
-        print(f"Path Lengths: Mean = {np.round(np.mean(path_lengths),2)}, Std Dev = {np.round(np.std(path_lengths),2)}, Edge Weight = {edge_weight}")
+        print(f"Path Lengths: Mean = {np.round(np.mean(path_lengths),2)}, Std Dev = {np.round(np.std(path_lengths),2)}, Edge Weight = {edge_weight}, No paths = {no_paths}/{n_samples}")
+        
     
     if plot:
-        title = f"Shortest Path Distance\n{n_samples} Samples\nEdge Weight = {edge_weight}"
+        title = f"Shortest Path Distance\n{n_samples} Samples\nEdge Weight = {edge_weight}\nNumber of Samples with No Path = {no_paths}/{n_samples}"
         if title_prefix is not None:
             title = f"{title_prefix}\n{title}"
         
