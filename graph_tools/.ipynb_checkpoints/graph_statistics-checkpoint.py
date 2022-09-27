@@ -740,6 +740,8 @@ def adjacency(
         return adj_matrix,nodelist
     else:
         return adj_matrix
+    
+
 
 import time
 def eig_vals_vecs_from_matrix(
@@ -764,6 +766,18 @@ def adjacency_eig_vals_vecs(G,verbose = False):
 
 def eigenvector_centrality(G):
     return nx.eigenvector_centrality(G)
+
+def betweenness_centrality(
+    G,
+    normalized=True,
+    endpoints = False,
+    **kwargs):
+    return nx.algorithms.betweenness_centrality(
+        G,
+        normalized=normalized,
+        endpoints = endpoints,
+        **kwargs,
+    )
 
 def eigenvector_centrality_numpy(G, weight=None, max_iter=50, tol=0):
     r"""Compute the eigenvector centrality for the graph G.
