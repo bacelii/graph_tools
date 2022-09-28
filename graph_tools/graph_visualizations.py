@@ -7,10 +7,10 @@ import numpy as np
 import matplotlib_utils as mu
 import matplotlib
 
-def plot_degree_distribution_simple(G,):
+def plot_degree_distribution_simple(G,bins = 20):
     degree_distr = gs.degree_distribution(G)
     fig,ax = plt.subplots(1,1)
-    ax.hist(degree_distr)
+    ax.hist(degree_distr,bins = bins)
     ax.set_title("Degree Disribution")
     plt.show()
 

@@ -870,4 +870,12 @@ def eigenvector_centrality_numpy(G, weight=None, max_iter=50, tol=0):
     norm = np.sign(largest.sum()) * sp.linalg.norm(largest)
     return dict(zip(G, largest / norm))
 
+
+# ---- new graph statistics -----
+def local_clustering_coefficients(
+    G,
+    nodes=None,
+    **kwargs):
+    return nx.clustering(G,nodes=nodes,**kwargs)
+
 import graph_statistics as gs
