@@ -174,7 +174,93 @@ def draw_G_with_color_array(
     cbar = plt.colorbar(sm)
     plt.show()
     
+    
+def plot_partition(
+    G,
+    values,
+    nodes=None,
+    pos=None,
+    class_colors = ("blue","red",),
+    ):
+    if pos is None:
+        pos = nx.spring_layout(G)
+    if nodes is None:
+        nodes= list(G.nodes())
+    
+    values= np.array(values).ravel()
+    
+    # ----------- doing the scalar plotting ----
+    print(f"--- Continuous Classification ---")
+    vmin = values.min()
+    vmin = -1
+    vmax = values.max()
+    vmax = 1
+    cmap = plt.cm.coolwarm
+    print(f"values={[np.round(k,4) for k in values]}")
+    nx.draw_networkx(
+        G, pos=pos, node_color=values,
+                 cmap=cmap, vmin=vmin, vmax=vmax, with_labels=False)
 
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=vmin, vmax=vmax))
+    #sm.set_array([])
+    cbar = plt.colorbar(sm)
+    plt.show()
+    
+    print(f"--- Binary Classification ---")
+    colors = np.array([class_colors[0]]*len(values)).astype('object')
+    colors[values >= 0] = class_colors[1]
+    #node_colors = {n:c for n,c in zip(nodes,colors)}
+    
+    nx.draw(
+        G,
+        node_color = colors,
+        pos = pos,
+        with_labels = True,
+        
+    )
+    plt.show()
+
+def plot_modularity_vs_spectral_partitioning(
+    G,
+    ):
+
+    nodelist = list(G.nodes())
+    pos = nx.spring_layout(
+        G,
+    )
+
+    L = nx.laplacian_matrix(
+        G,
+        nodelist=nodelist
+    ).toarray()
+    B = nx.modularity_matrix(
+        G,
+        nodelist=nodelist
+    )
+
+    print(f"--- Modularity Spectral Clustering ---")
+    eigvals,eigvecs = np.linalg.eigh(B)
+    print(f"eigvals = {eigvals}")
+    B_eigvec = eigvecs[:,-1]
+
+    plot_partition(
+        G,
+        values = B_eigvec,
+        nodes = nodelist,
+        pos = pos
+    )
+
+    print(f"--- Spectral Clustering ---")
+    eigvals,eigvecs = np.linalg.eigh(L)
+    print(f"eigvals = {eigvals}")
+    L_eigvec = eigvecs[:,1]
+
+    plot_partition(
+        G,
+        values = L_eigvec,
+        nodes = nodelist,
+        pos = pos
+    )
     
 import graph_visualizations as gviz
         

@@ -716,31 +716,10 @@ def trunc_power_stretched_exp_fit_ratio(G):
     return R
 
 import numpy as np
-def laplacian(G,dense = True):
-    L = nx.laplacian_matrix(G)
-    if dense:
-        L = L.todense()
-    return L
 
-def adjacency(
-    G,
-    dense = True,
-    nodelist=None,
-    return_nodelist = False,
-    **kwargs):
-    adj_matrix = nx.adjacency_matrix(G,nodelist=nodelist,**kwargs)
-    
-    if dense:
-        adj_matrix = adj_matrix.toarray()
-        
-    if nodelist is None:
-        nodelist = np.array(list(G.nodes()))
-    
-    if return_nodelist:
-        return adj_matrix,nodelist
-    else:
-        return adj_matrix
-    
+adjacency_matrix = xu.adjacency_matrix
+modularity_matrix = xu.modularity_matrix
+laplacian = xu.laplacian
 
 
 import time
@@ -758,8 +737,13 @@ def eig_vals_vecs_from_matrix(
         
     return eigvals, eigvecs
     
+
 def laplacian_eig_vals_vecs(G,verbose = False):
-    return gs.eig_vals_vecs_from_matrix(gs.laplacian(G),verbose = verbose)
+    if xu.is_graph(G):
+        lap = gs.laplacian(G)
+    else:
+        lap = G
+    return gs.eig_vals_vecs_from_matrix(lap,verbose = verbose)
 
 def adjacency_eig_vals_vecs(G,verbose = False):
     return gs.eig_vals_vecs_from_matrix(gs.adjacency(G),verbose = verbose)
@@ -877,5 +861,13 @@ def local_clustering_coefficients(
     nodes=None,
     **kwargs):
     return nx.clustering(G,nodes=nodes,**kwargs)
+
+def modularity_matrix(G,nodelist=None,**kwargs):
+    return nx.modularity_matrix(
+        G,
+        nodelist=nodelist,
+        **kwargs
+    )
+    
 
 import graph_statistics as gs

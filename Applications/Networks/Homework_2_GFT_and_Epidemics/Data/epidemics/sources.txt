@@ -1,0 +1,4 @@
+The network data is based on the giant connected component of the flight network data that can be found here.
+
+http://toreopsahl.com/datasets/#usairports
+http://openflights.org/
