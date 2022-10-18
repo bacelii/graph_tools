@@ -748,8 +748,14 @@ def laplacian_eig_vals_vecs(G,verbose = False):
 def adjacency_eig_vals_vecs(G,verbose = False):
     return gs.eig_vals_vecs_from_matrix(gs.adjacency(G),verbose = verbose)
 
-def eigenvector_centrality(G):
-    return nx.eigenvector_centrality(G)
+def eigenvector_centrality(
+    G,
+    weight = None,
+    **kwargs):
+    return nx.eigenvector_centrality(
+        G,
+        weight=weight,
+        **kwargs)
 
 def betweenness_centrality(
     G,
