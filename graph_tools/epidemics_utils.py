@@ -13,6 +13,7 @@ def simulate_infection_size(
     plot_pit = False,
     figsize = (6,6),
     return_pit = False,
+    title_suffix = None,
     ):
     """
     From homework 2 of networks class
@@ -39,6 +40,9 @@ def simulate_infection_size(
         fr"$\beta$ = {B}" + "\n" + 
         fr"$\gamma$ = {y}"
     )
+    
+    if title_suffix is not None:
+        parameters_str += f"\n{title_suffix}"
     if plot:
         fig,ax = plt.subplots(1,1,figsize=figsize)
         ax.plot(np.concatenate([[0],timesteps]),pt)
@@ -58,6 +62,7 @@ def simulate_infection_size(
         ax.set_title(
             f"Final Pi(t = {T}) histogam\n" + parameters_str
         )
+        plt.show()
         
     if return_pit:
         return pt,pit

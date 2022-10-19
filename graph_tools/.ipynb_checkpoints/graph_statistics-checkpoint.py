@@ -769,6 +769,30 @@ def betweenness_centrality(
         **kwargs,
     )
 
+def degree_centrality(
+    G,
+    weight = None,
+    nodes = None,
+    normalize = True,
+    ):
+    """
+    Purpose: To compute the degree
+    centrality for nodes (with an option for weighted)
+    """
+    if nodes is None:
+        nodes = list(G.nodes())
+        
+    weight_dict = dict(G.degree(
+        nodes,
+        weight = weight
+    ))
+    
+    if normalize:
+        total_weight = np.linalg.norm(list(weight_dict.values()))
+        weight_dict = {k:v/total_weight for k,v in weight_dict.items()}
+        
+    return weight_dict
+
 def eigenvector_centrality_numpy(G, weight=None, max_iter=50, tol=0):
     r"""Compute the eigenvector centrality for the graph G.
 
@@ -859,7 +883,6 @@ def eigenvector_centrality_numpy(G, weight=None, max_iter=50, tol=0):
     largest = eigenvector.flatten().real
     norm = np.sign(largest.sum()) * sp.linalg.norm(largest)
     return dict(zip(G, largest / norm))
-
 
 # ---- new graph statistics -----
 def local_clustering_coefficients(
