@@ -2,15 +2,17 @@ import numpy as np
 import networkx_utils as nx
 import networkx_utils as xu
 
-def largest_connected_component(
-    G,
-    verbose = False):
-    conn_comp = list(nx.connected_components(G))
-    largest_idx = np.argmax([len(k) for k in conn_comp])
-    if verbose:
-        print(f"Largest connected component size = {len(conn_comp[largest_idx])}")
+# def largest_connected_component(
+#     G,
+#     verbose = False):
+#     conn_comp = list(nx.connected_components(G))
+#     largest_idx = np.argmax([len(k) for k in conn_comp])
+#     if verbose:
+#         print(f"Largest connected component size = {len(conn_comp[largest_idx])}")
         
-    return G.subgraph(list(conn_comp[largest_idx]))
+#     return G.subgraph(list(conn_comp[largest_idx]))
+
+largest_connected_component = xu.largest_connected_component
 
 def random_subgraph(
     G,

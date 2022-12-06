@@ -90,6 +90,125 @@ def degree_distribution_analysis(G,
                                          )
     return degree_dist_stats
 
+def degree_distribution_stat(
+    G,
+    nodes=None,
+    stat = "mean",
+    percentile=None,
+    degree_type="in_and_out",
+    verbose = False,
+    **kwargs):
+    
+    if type(stat) == str:
+        stat = getattr(np,stat)
+        
+    # print(f"degree_type = {degree_type}")
+    value = stat(degree_distribution(
+        G,
+        nodes=nodes,
+        percentile=percentile,
+        degree_type=degree_type,
+        **kwargs,
+    ))
+    
+    if verbose:
+        print(f"{stat.__name__} of {degree_type} = {value}")
+        
+    return value
+
+def degree_distribution_mean(
+    G,
+    nodes=None,
+    percentile=None,
+    degree_type="in_and_out",
+    **kwargs):
+
+    return degree_distribution_stat(
+        G,
+        nodes=nodes,
+        stat = "mean",
+        percentile=percentile,
+        degree_type=degree_type,
+        **kwargs
+        )
+
+def degree_distribution_median(
+    G,
+    nodes=None,
+    percentile=None,
+    degree_type="in_and_out",
+    **kwargs):
+
+    return degree_distribution_stat(
+        G,
+        nodes=nodes,
+        stat = "median",
+        percentile=percentile,
+        degree_type=degree_type,
+        **kwargs
+        )
+
+def in_degree_mean(
+    G,
+    nodes = None,
+    percentile = None,
+    **kwargs
+    ):
+    
+    return degree_distribution_mean(
+        G,
+        nodes = nodes,
+        percentile = percentile,
+        degree_type="in",
+        **kwargs
+        )
+
+def out_degree_mean(
+    G,
+    nodes = None,
+    percentile = None,
+    **kwargs
+    ):
+    
+    return degree_distribution_mean(
+        G,
+        nodes = nodes,
+        percentile = percentile,
+        degree_type="out",
+        **kwargs
+        )
+
+def in_degree_median(
+    G,
+    nodes = None,
+    percentile = None,
+    **kwargs
+    ):
+    
+    return degree_distribution_median(
+        G,
+        nodes = nodes,
+        percentile = percentile,
+        degree_type="in",
+        **kwargs
+        )
+
+def out_degree_median(
+    G,
+    nodes = None,
+    percentile = None,
+    **kwargs
+    ):
+    
+    return degree_distribution_median(
+        G,
+        nodes = nodes,
+        percentile = percentile,
+        degree_type="out",
+        **kwargs
+        )
+
+
 
 #-------------- Functions that are available for graph stats ------------------ #
 #adding attributes to functions
@@ -212,13 +331,7 @@ def tree_number(G,**kwargs):
 # ------ newly added statistics 3/19 ------------ #
 
 @run_options(directional=True,multiedge=True)
-def degree_distribution_mean(G,**kwargs):
-    sequences = [k for v,k in dict(G.degree).items()]
-    return np.mean(sequences)
-
-
-@run_options(directional=True,multiedge=True)
-def degree_distribution_mean(G,**kwargs):
+def degree_distribution_mean_simple(G,**kwargs):
     sequences = [k for v,k in dict(G.degree).items()]
     return np.mean(sequences)
 
@@ -898,5 +1011,79 @@ def modularity_matrix(G,nodelist=None,**kwargs):
         **kwargs
     )
     
+    
+# --- 11/28 ---
+import numpy as np
+def node_attribute_stat(
+    G,
+    attribute,
+    stat = "mean",
+    nodes = None,
+    verbose = False   
+    ):
+    """
+    Purpose: To get a summary
+    statistic of a node
+    attribute from all nodes
+    in graph
+
+    Pseudocode: 
+    1) Get the attribute for all nodes
+    specified
+    2) Run the summary statistic
+    
+    Ex: 
+    gstat.node_attribute_stat(
+        G = G_auto,
+        attribute = "axon_skeletal_length",
+        stat = "mean",
+        verbose = True,
+    )
+    """
+    if type(stat) == str:
+        stat = getattr(np,stat)
+
+    attrs = xu.get_node_attribute_for_all_nodes(
+        G,
+        name = attribute,
+        nodes = nodes,
+    )
+    
+    value = stat(attrs)
+    if verbose:
+        print(f"{stat.__name__} of {attribute} = {value}")
+
+    
+    return value
+
+def node_attribute_mean(
+    G,
+    attribute,
+    nodes = None,
+    verbose = False  
+    ):
+    
+    return node_attribute_stat(
+    G,
+    attribute,
+    stat = "mean",
+    nodes = nodes,
+    verbose = verbose   
+    )
+
+def node_attribute_median(
+    G,
+    attribute,
+    nodes = None,
+    verbose = False  
+    ):
+    
+    return node_attribute_stat(
+    G,
+    attribute,
+    stat = "median",
+    nodes = nodes,
+    verbose = verbose   
+    )
 
 import graph_statistics as gs
