@@ -1,9 +1,12 @@
+Algorithms and preprocessing methods for network science and graph machine learning. Applications include projects from Rice University Network Analysis class and Graph Machine Learning class.
+
+
 ## -- external modules may need to add for functionality --
 cd /
-git clone https://github.com/celiibrendan/python_tools  
-git clone https://github.com/celiibrendan/machine_learning_tools.git  
-git clone https://github.com/celiibrendan/neuron_morphology_tools.git  
-git clone https://github.com/celiibrendan/pytorch_tools.git  
+git clone https://github.com/bacelii/python_tools  
+git clone https://github.com/bacelii/machine_learning_tools.git  
+git clone https://github.com/bacelii/neuron_morphology_tools.git  
+git clone https://github.com/bacelii/pytorch_tools.git  
 
 """
 Would then add to your path as follows: 
