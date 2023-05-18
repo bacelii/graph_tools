@@ -1,10 +1,8 @@
-from tqdm_utils import tqdm
-import tqdm_utils as tqdmu
-import time
+
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import matplotlib.pyplot as plt
-import networkx_utils as xu
+import time
 def shortest_path_distance_samples(
     G,
     n_samples = 10000,
@@ -134,7 +132,6 @@ def shortest_path_distance_samples(
     else:
         return path_lengths
 
-import numpy as np
 def shortest_path_distance_samples_stat(
     G,
     stat,
@@ -314,3 +311,7 @@ def shortest_path_distance_samples_perc_95_from_source_undirected(
     )
     
     
+#--- from python_tools ---
+from python_tools import networkx_utils as xu
+from python_tools import tqdm_utils as tqdmu
+from python_tools.tqdm_utils import tqdm

@@ -1,3 +1,4 @@
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -68,4 +69,5 @@ def simulate_infection_size(
         return pt,pit
     return pt
 
-import epidemics_utils as epu
+
+from . import epidemics_utils as epu

@@ -1,12 +1,16 @@
-import numpy as np
-import netsci.visualization as nsv
-import netsci.metrics.motifs as nsm
+'''
 
-"""
 Note: The motifs it finds, if it finds 3 nodes for a motif,
 those 3 nodes are not used in double counting of another motif
 (NO DOUBLE COUNTING)
-"""
+
+'''
+import matplotlib.pyplot as plt
+import netsci.metrics.motifs as nsm
+import netsci.visualization as nsv
+import numpy as np
+import seaborn as sns
+
 
 
 def plot_all_triads(
@@ -33,14 +37,12 @@ def plot_all_triads(
     plt.axis('equal')
     
     
-import matplotlib_utils as mu
-import matplotlib.pyplot as plt
 def example_plot_3_node_motifs():
     
     figsize = (20,10)
     fig,ax = plt.subplots(1,1,figsize=figsize)
 
-    import matplotlib_utils as mu
+    from python_tools import matplotlib_utils as mu
     n_colors = 16
     node_color = mu.generate_non_randon_named_color_list(n_colors,colors_to_omit="black")
 
@@ -54,7 +56,6 @@ def example_plot_3_node_motifs():
         )
 
     
-import seaborn as sns
 def example_plot_3_node_motifs_comparison(
     frequency_syn,
     frequency_prox,
@@ -85,4 +86,7 @@ def example_plot_3_node_motifs_comparison(
     ax.set_yscale("log")
 
 
-import netsci_utils as nsu
+#--- from python_tools ---
+from python_tools import matplotlib_utils as mu
+
+from . import netsci_utils as nsu

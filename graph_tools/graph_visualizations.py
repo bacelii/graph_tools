@@ -1,13 +1,5 @@
-import matplotlib.pyplot as plt
-import networkx as nx
-import graph_statistics as gs
-import numpy as np
+'''
 
-
-import matplotlib_utils as mu
-import matplotlib
-
-"""
 The parameters for plotting networkx graphs using nx.draw
 https://github.com/networkx/networkx/blob/main/networkx/drawing/nx_pylab.py#L584
 
@@ -94,7 +86,16 @@ https://github.com/networkx/networkx/blob/main/networkx/drawing/nx_pylab.py#L584
         See networkx.draw_networkx_nodes(), networkx.draw_networkx_edges(), and
         networkx.draw_networkx_labels() for a description of optional keywords.
 
-"""
+
+'''
+import matplotlib
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+import pandas as pd
+
+
+
 
 def plot_degree_distribution_simple(G,bins = 20):
     degree_distr = gs.degree_distribution(G)
@@ -161,7 +162,7 @@ def plot_degree_distribution(G,degree_type="in_and_out",
     plt.show()
     
     if print_degree_distribution_stats:
-        import numpy_utils as nu
+        from python_tools import numpy_utils as nu
         mean_orig_multi_di = np.mean(degree_distribution_filtered)
         median_orig_multi_di = np.median(degree_distribution_filtered)
         print(f"Mean {degree_type} Degree = {nu.comma_str(np.round(mean_orig_multi_di,2))}\n"
@@ -169,9 +170,6 @@ def plot_degree_distribution(G,degree_type="in_and_out",
         
         
         
-import pandas_utils as pu
-import numpy_utils as nu
-import pandas as pd
 def graph_stats_dicts_to_plt_table(stats_list,graph_names_list):
     """
     Psuedocode: To assemble all of the statistics in to a table
@@ -351,5 +349,13 @@ def plot_modularity_vs_spectral_partitioning(
         pos = pos
     )
     
-import graph_visualizations as gviz
         
+#--- from graph_tools ---
+from . import graph_statistics as gs
+
+#--- from python_tools ---
+from python_tools import matplotlib_utils as mu
+from python_tools import numpy_utils as nu
+from python_tools import pandas_utils as pu
+
+from . import graph_visualizations as gviz

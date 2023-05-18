@@ -1,8 +1,11 @@
+
+from collections import Counter
+from networkx.generators.classic import empty_graph, path_graph, complete_graph
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import time
-import matplotlib.pyplot as plt
 import random
+import time
     
 
 def rename(newname):
@@ -102,7 +105,6 @@ def power_law_sequence(n,alpha,xmin,before_xmin_func=None,perc_before_xmin=0,bef
         x_total = np.hstack([x_before,x_after])
         return x_total
         
-from collections import Counter
 
 def uniform_sequence(n,k_max):
     """
@@ -265,7 +267,6 @@ def _random_subset(seq,m):
         targets.add(x)
     return targets
 
-from networkx.generators.classic import empty_graph, path_graph, complete_graph
 
 @rename('LPA_wheel')
 def linear_preferncial_attachment_wheel(n, m, seed=None):
@@ -340,7 +341,6 @@ def linear_preferncial_attachment_wheel(n, m, seed=None):
 
 # BASIC vertex duplication:
 
-import random
 
 @rename('VD_basic')
 def vertex_duplication(n, p, seed=None):
@@ -422,7 +422,6 @@ How it works:
 
 """
 
-import random
 
 @rename('VD_mutation')
 def vertex_duplication_with_mutation(n, p, p2, seed=None):
@@ -494,7 +493,6 @@ def vertex_duplication_with_mutation(n, p, p2, seed=None):
     return G
 
 
-import random
 
 @rename('VD_complement')
 def vertex_duplication_with_complement(n, p, p2, seed=None):
@@ -578,3 +576,4 @@ def vertex_duplication_with_complement(n, p, p2, seed=None):
 
 # --------------- statistics for the null models ----------------
 # --------- degree distribution -----------
+

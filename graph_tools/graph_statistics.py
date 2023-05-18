@@ -1,4 +1,5 @@
-"""
+'''
+
 Useful python functions main from networkx
 for estimating network stats
 
@@ -7,20 +8,27 @@ Notes: most of functions orignially from /old_modules/graph_statistics_and_simul
 packages that need to be installed: 
 1) ndlib
 2) powerlaw
-"""
 
-
+'''
+from itertools import chain
+from networkx.algorithms import approximation as app
+from networkx.algorithms import distance_measures as dist
+from tqdm import tqdm
+import ndlib
+import ndlib.models.ModelConfig as mc
+import ndlib.models.epidemics as ep
 import networkx as nx
 import numpy as np
+import powerlaw
+import scipy
 import time
-import graph_visualizations as gviz
-import networkx_utils as xu
+
+
 
 
 
 
 # ------------- Degree Distributions ------------
-import numpy as np
 def degree_distribution(G,nodes=None,percentile=None,
                         degree_type="in_and_out",**kwargs):
     """
@@ -73,7 +81,7 @@ def degree_distribution_analysis(G,
         curr_degree_distr_median = np.median(curr_degree_distr)
 
         if verbose:
-            import numpy_utils as nu
+            from python_tools import numpy_utils as nu
             print(f"{graph_title} {k} degree distribution mean = {nu.comma_str(curr_degree_distr_mean)},\n"
                   f"{graph_title} {k} degree distribution median = {nu.comma_str(curr_degree_distr_median)}")
 
@@ -224,8 +232,6 @@ class run_options:
     
     
 # ------------- basic general stats ----------------
-from networkx.algorithms import approximation as app
-from networkx.algorithms import distance_measures as dist
 
 @run_options(directional=False,multiedge=False)
 def n_triangles(G):
@@ -391,7 +397,6 @@ def _get_vertex_order(G,selection_type="random"):
     else:
         raise Exception("Invalid Selection Type")
 
-from tqdm import tqdm
 
 def run_site_percolation(G,vertex_order_type="random",n_iterations=1000):
     total_runs = []
@@ -479,7 +484,6 @@ def run_site_percolation(G,vertex_order_type="random",n_iterations=1000):
     
     return s_phi,phi
     
-import networkx as nx
 
 
 @run_options(directional=False,multiedge=False)
@@ -510,12 +514,7 @@ def random_degree_site_percolation(G,n_iterations=200):
 
 # - Start of Beta Epidemic Stat -- #
     
-import ndlib
-import networkx as nx
-import numpy as np
 
-import ndlib.models.ModelConfig as mc
-import ndlib.models.epidemics as ep
 
 def pandemic_beta_average(
                                 graph,
@@ -667,7 +666,6 @@ def pandemic_beta(graph):
 
 # - End of Beta Epidemic Stat -- #
 
-import scipy
 
 #eigenvalue measurements
 @run_options(directional=False,multiedge=False)
@@ -700,7 +698,6 @@ def second_smallest_laplacian_eigen_value(G1):
     sorted_eig_vals = np.sort(np.real(np.linalg.eigvals(laplacian)))
     return sorted_eig_vals[1]
 
-from itertools import chain
 @run_options(directional=False,multiedge=False)
 def top_heavy_percentage(G1,top_percentage = 0.90):
     degree_sequence = np.array(G1.degree())[:,1]
@@ -761,7 +758,6 @@ def rich_club_transitivity(G):
 
 # --- Powerlaw stats --- #
 
-import powerlaw
 
 def get_degree_distribution(G):
     return np.array(G.degree())[:,1]
@@ -828,14 +824,12 @@ def trunc_power_stretched_exp_fit_ratio(G):
                                                 normalized_ratio=True)
     return R
 
-import numpy as np
 
 adjacency_matrix = xu.adjacency_matrix
 modularity_matrix = xu.modularity_matrix
 laplacian = xu.laplacian
 
 
-import time
 def eig_vals_vecs_from_matrix(
     array,
     verbose = False):
@@ -1013,7 +1007,6 @@ def modularity_matrix(G,nodelist=None,**kwargs):
     
     
 # --- 11/28 ---
-import numpy as np
 def node_attribute_stat(
     G,
     attribute,
@@ -1086,4 +1079,10 @@ def node_attribute_median(
     verbose = verbose   
     )
 
-import graph_statistics as gs
+#--- from graph_tools ---
+from . import graph_visualizations as gviz
+
+#--- from python_tools ---
+from python_tools import networkx_utils as xu
+
+from . import graph_statistics as gs

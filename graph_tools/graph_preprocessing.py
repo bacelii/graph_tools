@@ -1,6 +1,5 @@
+
 import numpy as np
-import networkx_utils as nx
-import networkx_utils as xu
 
 # def largest_connected_component(
 #     G,
@@ -39,7 +38,11 @@ def random_subgraph(
         
     return sub_G
         
-import graph_preprocessing as gpre
         
     
     
+#--- from python_tools ---
+from python_tools import networkx_utils as nx
+from python_tools import networkx_utils as xu
+
+from . import graph_preprocessing as gpre
