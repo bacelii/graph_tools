@@ -11,7 +11,7 @@ import numpy as np
         
 #     return G.subgraph(list(conn_comp[largest_idx]))
 
-largest_connected_component = xu.largest_connected_component
+
 
 def random_subgraph(
     G,
@@ -44,5 +44,7 @@ def random_subgraph(
 #--- from python_tools ---
 from python_tools import networkx_utils as nx
 from python_tools import networkx_utils as xu
+
+largest_connected_component = xu.largest_connected_component
 
 from . import graph_preprocessing as gpre

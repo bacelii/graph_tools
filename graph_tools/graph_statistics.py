@@ -825,9 +825,7 @@ def trunc_power_stretched_exp_fit_ratio(G):
     return R
 
 
-adjacency_matrix = xu.adjacency_matrix
-modularity_matrix = xu.modularity_matrix
-laplacian = xu.laplacian
+
 
 
 def eig_vals_vecs_from_matrix(
@@ -1084,5 +1082,9 @@ from . import graph_visualizations as gviz
 
 #--- from python_tools ---
 from python_tools import networkx_utils as xu
+
+adjacency_matrix = xu.adjacency_matrix
+modularity_matrix = xu.modularity_matrix
+laplacian = xu.laplacian
 
 from . import graph_statistics as gs
