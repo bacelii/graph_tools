@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>graph_tools.null_models &mdash; graph-tools 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            graph-tools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">graph_tools</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">graph-tools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">graph_tools.null_models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for graph_tools.null_models</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">networkx.generators.classic</span> <span class="kn">import</span> <span class="n">empty_graph</span><span class="p">,</span> <span class="n">path_graph</span><span class="p">,</span> <span class="n">complete_graph</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">time</span>
+    
+
+<div class="viewcode-block" id="rename"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.rename">[docs]</a><span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="n">newname</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="n">f</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="n">newname</span>
+        <span class="k">return</span> <span class="n">f</span>
+    <span class="k">return</span> <span class="n">decorator</span>    </div>
+
+<span class="c1"># ------------- BUILT IN GRAPH FUNCTIONS FROM NETWORKX ------------- #</span>
+<div class="viewcode-block" id="erdos_renyi"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.erdos_renyi">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;erdos_renyi&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">erdos_renyi</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+    <span class="k">return</span>  <span class="n">nx</span><span class="o">.</span><span class="n">fast_gnp_random_graph</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">p</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="p_ER_from_number_of_nodes_edges"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.p_ER_from_number_of_nodes_edges">[docs]</a><span class="k">def</span> <span class="nf">p_ER_from_number_of_nodes_edges</span><span class="p">(</span><span class="n">n_nodes</span><span class="p">,</span><span class="n">n_edges</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">n_edges</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="n">n_nodes</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">n_nodes</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="small_world"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.small_world">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;small_world&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">small_world</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">generators</span><span class="o">.</span><span class="n">random_graphs</span><span class="o">.</span><span class="n">watts_strogatz_graph</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="n">m</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span></div>
+    
+
+<div class="viewcode-block" id="erdos_renyi_random_location"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.erdos_renyi_random_location">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;erdos_renyi&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">erdos_renyi_random_location</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Erdos Renyi graph that has random locations generated</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1">#erdos_renyi_random_location.graph_name = &quot; erdos_renyi&quot;</span>
+    
+    <span class="n">network</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">fast_gnp_random_graph</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+    
+    <span class="c1">#setting random node locations</span>
+    <span class="n">node_locations</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                   <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                   <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">)])</span>
+
+    <span class="n">nx</span><span class="o">.</span><span class="n">set_node_attributes</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span><span class="n">node_locations</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span> 
+                              <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">nodes</span><span class="p">)]),</span> <span class="s1">&#39;locations&#39;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">network</span></div>
+
+<div class="viewcode-block" id="watts_strogatz_graph_smallworld_random_location"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.watts_strogatz_graph_smallworld_random_location">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;small_world&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">watts_strogatz_graph_smallworld_random_location</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+    <span class="c1">#watts_strogatz_graph_smallworld_random_location.__name__ = &quot; small_world&quot;</span>
+    
+    <span class="n">network</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">generators</span><span class="o">.</span><span class="n">random_graphs</span><span class="o">.</span><span class="n">watts_strogatz_graph</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="n">m</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span>
+    
+    
+    
+    <span class="c1">#setting random node locations</span>
+    <span class="n">node_locations</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                   <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                   <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">)])</span>
+
+    <span class="n">nx</span><span class="o">.</span><span class="n">set_node_attributes</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span><span class="n">node_locations</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span> 
+                              <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">nodes</span><span class="p">)]),</span> <span class="s1">&#39;locations&#39;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">network</span></div>
+
+<div class="viewcode-block" id="random_tree_random_location"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.random_tree_random_location">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;random_tree&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">random_tree_random_location</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="c1">#random_tree_random_location.__name__ = &quot;random_tree&quot;</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">generators</span><span class="o">.</span><span class="n">trees</span><span class="o">.</span><span class="n">random_tree</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    
+    <span class="c1">#setting random node locations</span>
+    <span class="n">node_locations</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                   <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                   <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">)])</span>
+
+    <span class="n">nx</span><span class="o">.</span><span class="n">set_node_attributes</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span><span class="n">node_locations</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span> 
+                              <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">nodes</span><span class="p">)]),</span> <span class="s1">&#39;locations&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">network</span></div>
+
+
+<div class="viewcode-block" id="random_uniform"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.random_uniform">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;random_uniform&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">random_uniform</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">):</span>
+    <span class="c1">#random_uniform.__name__ = &quot;random_uniform&quot;</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">random_regular_graph</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">)</span></div>
+
+
+<span class="c1"># ------------- SPECIFYING A CERTAIN DEGREE SEQUENCE ---------------- #</span>
+
+<div class="viewcode-block" id="power_law_sequence"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.power_law_sequence">[docs]</a><span class="k">def</span> <span class="nf">power_law_sequence</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">xmin</span><span class="p">,</span><span class="n">before_xmin_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">perc_before_xmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">before_xmin_func_args</span><span class="o">=</span><span class="nb">dict</span><span class="p">()):</span>
+    <span class="k">if</span> <span class="n">perc_before_xmin</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">xmin</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">r</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">alpha</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n_before</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">perc_before_xmin</span><span class="o">*</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">n_after</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="n">n_before</span>
+        
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">x_after</span> <span class="o">=</span> <span class="n">xmin</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">r</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">alpha</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        
+        <span class="n">x_before</span> <span class="o">=</span> <span class="n">before_xmin_func</span><span class="p">(</span><span class="n">before_xmin_func_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n_before</span><span class="p">)))</span>
+        
+        <span class="n">x_total</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">x_before</span><span class="p">,</span><span class="n">x_after</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">x_total</span></div>
+        
+
+<div class="viewcode-block" id="uniform_sequence"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.uniform_sequence">[docs]</a><span class="k">def</span> <span class="nf">uniform_sequence</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k_max</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return sample sequence of length n from a uniform distribution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#print(f&quot;k_max = {k_max}&quot;)</span>
+    <span class="c1">#uniform_seq = np.random.uniform(0,k_max,n)</span>
+    <span class="n">uniform_seq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">low</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="n">k_max</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">n</span><span class="p">)</span> 
+    <span class="c1">#print(f&quot;Sequence about to be returned = {Counter(uniform_seq)}&quot;)</span>
+    <span class="k">return</span> <span class="n">uniform_seq</span></div>
+
+
+<div class="viewcode-block" id="create_degree_sequence"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.create_degree_sequence">[docs]</a><span class="k">def</span> <span class="nf">create_degree_sequence</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">sfunction</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_tries</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Attempt to create a valid degree sequence of length n using</span>
+<span class="sd">    specified function sfunction(n,**kwds).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Length of degree sequence = number of nodes</span>
+<span class="sd">    sfunction: function</span>
+<span class="sd">        Function which returns a list of n real or integer values.</span>
+<span class="sd">        Called as &quot;sfunction(n,**kwds)&quot;.</span>
+<span class="sd">    max_tries: int</span>
+<span class="sd">        Max number of attempts at creating valid degree sequence.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Repeatedly create a degree sequence by calling sfunction(n,**kwds)</span>
+<span class="sd">    until achieving a valid degree sequence. If unsuccessful after</span>
+<span class="sd">    max_tries attempts, raise an exception.</span>
+<span class="sd">    </span>
+<span class="sd">    For examples of sfunctions that return sequences of random numbers,</span>
+<span class="sd">    see networkx.Utils.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from networkx.utils import uniform_sequence, create_degree_sequence</span>
+<span class="sd">    &gt;&gt;&gt; seq=create_degree_sequence(10,uniform_sequence)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tries</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">max_deg</span><span class="o">=</span><span class="n">n</span>
+    <span class="k">while</span> <span class="n">tries</span> <span class="o">&lt;</span> <span class="n">max_tries</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tries</span> <span class="o">%</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;     Still working: On iteration number </span><span class="si">{</span><span class="n">tries</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">trialseq</span><span class="o">=</span><span class="n">sfunction</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span><span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+        <span class="c1"># round to integer values in the range [0,max_deg]</span>
+        <span class="n">seq</span><span class="o">=</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">max_deg</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">s</span><span class="p">)),</span><span class="mi">0</span> <span class="p">))</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">trialseq</span><span class="p">]</span>
+        <span class="c1">#if graphical return, else throw away and try again</span>
+        <span class="c1">#if sum(seq) % 2 == 0:</span>
+        <span class="k">if</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_graphical</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;returning a sequence that can be exactly build&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">seq</span><span class="p">,</span><span class="kc">True</span>
+        <span class="n">tries</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="n">tries</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">tries</span> <span class="o">&lt;</span> <span class="n">max_tries</span><span class="p">:</span>
+        <span class="n">trialseq</span><span class="o">=</span><span class="n">sfunction</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span><span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+        <span class="c1"># round to integer values in the range [0,max_deg]</span>
+        <span class="n">seq</span><span class="o">=</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">max_deg</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">s</span><span class="p">)),</span><span class="mi">0</span> <span class="p">))</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">trialseq</span><span class="p">]</span>
+        <span class="c1">#if graphical return, else throw away and try again</span>
+        <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1">#if nx.is_graphical(powerlaw_degree_seq):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t find exact sequence, return even sequence&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">seq</span><span class="p">,</span><span class="kc">False</span>
+        <span class="n">tries</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="k">raise</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXError</span><span class="p">(</span>\
+          <span class="s2">&quot;Exceeded max (</span><span class="si">%d</span><span class="s2">) attempts at a valid sequence.&quot;</span><span class="o">%</span><span class="n">max_tries</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="random_sequence_law"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.random_sequence_law">[docs]</a><span class="k">def</span> <span class="nf">random_sequence_law</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Will create a random graph based on the sequence function you </span>
+<span class="sd">    pass it and other parameters</span>
+<span class="sd">    </span>
+<span class="sd">    Example use: </span>
+<span class="sd">    random_sequence_law(n=10,sfunction=power_law_sequence, max_tries=50, xmin = 1,alpha=2)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#print(f&quot;inside random_sequence_law for function = {kwargs[&#39;sfunction&#39;]}&quot;)</span>
+    <span class="n">degree_seq</span><span class="p">,</span><span class="n">exact_sequence_flag</span> <span class="o">=</span> <span class="n">create_degree_sequence</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1">#print(f&quot;degree_seq before configuration = {Counter(degree_seq)}&quot;)</span>
+    
+    <span class="c1">#print(&quot;USING THE CONFIGURATION MODEL&quot;)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">exact_sequence_flag</span><span class="p">:</span>
+        
+        <span class="n">G</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">configuration_model</span><span class="p">(</span><span class="n">degree_seq</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#G = nx.generators.degree_seq.random_degree_sequence_graph(degree_seq)</span>
+        <span class="c1">#G = nx.generators.degree_seq.expected_degree_graph(degree_seq)</span>
+        <span class="n">G</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">configuration_model</span><span class="p">(</span><span class="n">degree_seq</span><span class="p">)</span>
+        
+    <span class="c1">#print(f&quot;Before fixing the self-loops,multi-edges, degree sequence after configuration is = {Counter([v for k,v in dict(G.degree()).items()])}&quot;)</span>
+    <span class="n">G</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">G</span><span class="p">)</span> <span class="c1"># to remove parallel edges</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">selfloop_edges</span><span class="p">())</span> <span class="c1"># to remove self loops</span>
+        <span class="k">return</span> <span class="n">G</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">G</span></div>
+
+    
+<div class="viewcode-block" id="random_power_law"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.random_power_law">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;power_law&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">random_power_law</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">xmin</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="c1">#random_power_law.__name__ = &quot;power_law&quot;</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">random_sequence_law</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span>
+                              <span class="n">sfunction</span><span class="o">=</span><span class="n">power_law_sequence</span><span class="p">,</span>
+                                 <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                                 <span class="n">xmin</span><span class="o">=</span><span class="n">xmin</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">G</span></div>
+    
+    
+<span class="c1"># ----------------Those functions that rely on growing mechanism -------- #</span>
+
+<span class="c1"># ------- preferential Attachment ----- #</span>
+<div class="viewcode-block" id="linear_preferencial_attachment_random"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.linear_preferencial_attachment_random">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;LPA_random&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">linear_preferencial_attachment_random</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">G</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1">#linear_preferencial_attachment_random.__name__ = &quot;LPA_random&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Will generate a rich get richer graph</span>
+<span class="sd">    </span>
+<span class="sd">    preferential attachment but starts from a random graph</span>
+<span class="sd">    </span>
+<span class="sd">    Example: </span>
+<span class="sd">    G_LPA = linear_preferencial_attachment_random(20,5,0.3)</span>
+<span class="sd">    nx.draw(G_LPA)</span>
+<span class="sd">    </span>
+<span class="sd">    m = number of edges you want per node</span>
+<span class="sd">    p = the probability of connection at the start</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">G</span><span class="p">:</span>
+        <span class="c1">#print(&quot;using erdos renyi model&quot;)</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">erdos_renyi_graph</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+    <span class="c1">#print(len(G.edges()))</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">())</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">m</span>
+    <span class="c1">#loop that will add the node</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="c1">#print(f&quot;targets = {targets}, m = {m}&quot;)</span>
+        <span class="n">new_targets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">m</span><span class="p">)</span>
+        <span class="c1">#print(f&quot;new_targets = {new_targets}&quot;)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">m</span><span class="p">,</span><span class="n">new_targets</span><span class="p">))</span>
+        <span class="c1">#print(f&quot;G.edges = {G.edges}&quot;)</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">())</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="c1">#targets = np.hstack([targets,new_targets])</span>
+
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_random_subset</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="n">m</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Return m unique elements from seq.</span>
+
+<span class="sd">    This differs from random.sample which can return repeated</span>
+<span class="sd">    elements if seq holds repeated elements.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">targets</span><span class="o">=</span><span class="nb">set</span><span class="p">()</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span><span class="o">&lt;</span><span class="n">m</span><span class="p">:</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+        <span class="n">targets</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">targets</span>
+
+
+<div class="viewcode-block" id="linear_preferncial_attachment_wheel"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.linear_preferncial_attachment_wheel">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;LPA_wheel&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">linear_preferncial_attachment_wheel</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a random graph according to the Barabási–Albert preferential</span>
+<span class="sd">    attachment model. Preferential Attachment but starts from spoke and wheel graph</span>
+
+<span class="sd">    A graph of ``n`` nodes is grown by attaching new nodes each with ``m``</span>
+<span class="sd">    edges that are preferentially attached to existing nodes with high degree.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of nodes</span>
+<span class="sd">    m : int</span>
+<span class="sd">        Number of edges to attach from a new node to existing nodes</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        Seed for random number generator (default=None).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    G : Graph</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NetworkXError</span>
+<span class="sd">        If ``m`` does not satisfy ``1 &lt;= m &lt; n``.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] A. L. Barabási and R. Albert &quot;Emergence of scaling in</span>
+<span class="sd">       random networks&quot;, Science 286, pp 509-512, 1999.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    
+    
+    <span class="c1">#linear_preferncial_attachment_wheel.__name__ = &quot;LPA_wheel&quot;</span>
+
+    <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span>  <span class="n">m</span> <span class="o">&gt;=</span><span class="n">n</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXError</span><span class="p">(</span><span class="s2">&quot;Barabási–Albert network must have m &gt;= 1&quot;</span>
+                               <span class="s2">&quot; and m &lt; n, m = </span><span class="si">%d</span><span class="s2">, n = </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="c1"># Add m initial nodes (m0 in barabasi-speak)</span>
+    <span class="n">G</span><span class="o">=</span><span class="n">empty_graph</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;barabasi_albert_graph(</span><span class="si">%s</span><span class="s2">,</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">)</span>
+    <span class="c1"># Target nodes for new edges</span>
+    <span class="n">targets</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+    <span class="c1"># List of existing nodes, with nodes repeated once for each adjacent edge</span>
+    <span class="n">repeated_nodes</span><span class="o">=</span><span class="p">[]</span>
+    <span class="c1"># Start adding the other n-m nodes. The first node is m.</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">m</span>
+    <span class="k">while</span> <span class="n">source</span><span class="o">&lt;</span><span class="n">n</span><span class="p">:</span> <span class="c1">#because want to get all the way to n nodes and starting with m</span>
+        <span class="c1"># Add edges to m nodes from the source to all of the targets</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="n">source</span><span class="p">]</span><span class="o">*</span><span class="n">m</span><span class="p">,</span><span class="n">targets</span><span class="p">))</span>
+        <span class="c1"># Add one node to the list for each new edge just created.</span>
+        <span class="n">repeated_nodes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+        <span class="c1"># And the new node &quot;source&quot; has m edges to add to the list.</span>
+        <span class="n">repeated_nodes</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">source</span><span class="p">]</span><span class="o">*</span><span class="n">m</span><span class="p">)</span>
+        <span class="c1"># Now choose m unique nodes from the existing nodes</span>
+        <span class="c1"># Pick uniformly from repeated_nodes (preferential attachement)</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">_random_subset</span><span class="p">(</span><span class="n">repeated_nodes</span><span class="p">,</span><span class="n">m</span><span class="p">)</span>
+        <span class="c1">#print(f&quot;targets = {targets}&quot;)</span>
+        <span class="n">source</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+
+
+
+<span class="c1"># -------------------- Vertex Duplication ----------------------------------- #</span>
+
+<span class="c1"># BASIC vertex duplication:</span>
+
+
+<div class="viewcode-block" id="vertex_duplication"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.vertex_duplication">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;VD_basic&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">vertex_duplication</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns an undirected graph using the duplication-divergence model.</span>
+
+<span class="sd">    A graph of ``n`` nodes is created by duplicating the initial nodes</span>
+<span class="sd">    and retaining edges incident to the original nodes with a retention</span>
+<span class="sd">    probability ``p``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The desired number of nodes in the graph.</span>
+<span class="sd">    p : float</span>
+<span class="sd">        The probability for retaining the edge of the replicated node.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        A seed for the random number generator of ``random`` (default=None).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    G : Graph</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NetworkXError</span>
+<span class="sd">        If `p` is not a valid probability.</span>
+<span class="sd">        If `n` is less than 2.</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">    Example: nx.draw(vertex_duplication(20,0.5))</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#vertex_duplication.__name__ = &quot;VD_basic&quot;</span>
+    
+    <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;NetworkXError p=</span><span class="si">{0}</span><span class="s2"> is not in [0,1].&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;n must be greater than or equal to 2&#39;</span>
+        <span class="k">raise</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Duplication-Divergence Graph&quot;</span>
+
+    <span class="c1"># Initialize the graph with two connected nodes.</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="c1"># Choose a random node from current graph to duplicate.</span>
+        <span class="n">random_node</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+        <span class="c1"># Make the replica.</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="c1"># flag indicates whether at least one edge is connected on the replica.</span>
+        <span class="n">flag</span><span class="o">=</span><span class="kc">False</span>
+        <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">random_node</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">:</span>
+                <span class="c1"># Link retention step.</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+
+        
+        <span class="c1"># NOT GOING TO DELETE NODE FROM THE GROUP IF IT DOES NO EDGES</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">flag</span><span class="p">:</span>
+            <span class="c1"># Delete replica if no edges retained.</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Successful duplication.</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">G</span></div>
+
+<span class="c1"># vertex duplication WITH RANDOM MUTATION:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">How it works: </span>
+<span class="sd">1) Start with 2 nodes connected</span>
+<span class="sd">2) Adds on node and decides to replicate</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="vertex_duplication_with_mutation"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.vertex_duplication_with_mutation">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;VD_mutation&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">vertex_duplication_with_mutation</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns an undirected graph using the duplication-divergence model.</span>
+<span class="sd">    with probability p copies the edges of a node</span>
+<span class="sd">    with probability (1-p makes random edge)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#vertex_duplication_with_mutation.__name__ = &quot;VD_mutation&quot;</span>
+    
+    <span class="n">p_mut</span> <span class="o">=</span> <span class="n">p2</span>
+    <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;NetworkXError p=</span><span class="si">{0}</span><span class="s2"> is not in [0,1].&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;n must be greater than or equal to 2&#39;</span>
+        <span class="k">raise</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Duplication-Divergence Graph (with Mutation)&quot;</span>
+
+    <span class="c1"># Initialize the graph with two connected nodes.</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span>
+    
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="c1"># Choose a random node from current graph to duplicate.</span>
+        
+        <span class="n">random_node</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+        <span class="c1"># Make the replica.</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="c1"># flag indicates whether at least one edge is connected on the replica.</span>
+        <span class="n">flag</span><span class="o">=</span> <span class="kc">False</span>
+        <span class="n">random_node_neighbors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">random_node</span><span class="p">))</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">random_node_neighbors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">:</span>
+                <span class="c1"># Link retention step.</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Alteration: </span>
+<span class="sd">        1) For all neighbors not connected to new node</span>
+<span class="sd">        2) connect to them with probability p_mut/(i-1), so that it decays over time</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1">#get all of the neighbors not connected to </span>
+        <span class="n">current_neighbors</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+        <span class="n">remaining_neighbors</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">current_neighbors</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">remaining_neighbors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p_mut</span><span class="o">/</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="c1"># Link retention step.</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        
+
+        <span class="c1"># NOT GOING TO DELETE NODE FROM THE GROUP IF IT DOES NO EDGES</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">flag</span><span class="p">:</span>
+            <span class="c1"># Delete replica if no edges retained.</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Successful duplication.</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+        
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+
+<div class="viewcode-block" id="vertex_duplication_with_complement"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.null_models.vertex_duplication_with_complement">[docs]</a><span class="nd">@rename</span><span class="p">(</span><span class="s1">&#39;VD_complement&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">vertex_duplication_with_complement</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns an undirected graph using the duplication-divergence model.</span>
+<span class="sd">    with probability p copies the edges of a node</span>
+<span class="sd">    with probability (1-p makes random edge)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1">#vertex_duplication_with_complement.__name__ = &quot;VD_complement&quot;</span>
+    <span class="n">p_con</span> <span class="o">=</span> <span class="n">p2</span>
+    <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;NetworkXError p=</span><span class="si">{0}</span><span class="s2"> is not in [0,1].&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;n must be greater than or equal to 2&#39;</span>
+        <span class="k">raise</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Duplication-Divergence Graph (with Mutation)&quot;</span>
+
+    <span class="c1"># Initialize the graph with two connected nodes.</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="c1"># Choose a random node from current graph to duplicate.</span>
+        <span class="c1">#print(&quot;G.nodes() = &quot; + str(G.nodes()))</span>
+        <span class="n">random_node</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+        <span class="c1">#print(f&quot;Random Node = {random_node}&quot;)</span>
+        <span class="c1"># Make the replica.</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="c1"># flag indicates whether at least one edge is connected on the replica.</span>
+        <span class="c1">#print(&quot;G.nodes() = &quot; + str(G.nodes()))</span>
+        <span class="n">flag</span><span class="o">=</span> <span class="kc">False</span>
+        <span class="n">random_node_neighbors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">random_node</span><span class="p">))</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1">#print(f&quot;random_node_neighbors = {random_node_neighbors}&quot;)</span>
+        <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">random_node_neighbors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">:</span>
+                <span class="c1"># Link retention step.</span>
+                <span class="c1">#print(f&quot;copying {random_node} - {nbr}&quot;)</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#decide with 50/50 shot of whether to add edge to new vertices</span>
+                <span class="c1">#and delete the copied edge or keep everything the same</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]):</span>
+                    <span class="c1">#print(f&quot;complementation {random_node} - {nbr}&quot;)</span>
+                    <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">G</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">random_node</span><span class="p">,</span><span class="n">nbr</span><span class="p">)</span>
+                    <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">nbr</span><span class="p">)</span>
+                
+                    
+        <span class="c1">#decide whether to connect the new vertex and the one we copied</span>
+
+        
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">p</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="o">-</span><span class="n">p_con</span><span class="p">),</span><span class="n">p_con</span><span class="p">]):</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">random_node</span><span class="p">,</span><span class="n">nbr</span><span class="p">)</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+
+        
+<span class="c1">#         # NOT GOING TO DELETE NODE FROM THE GROUP IF IT DOES NO EDGES</span>
+<span class="c1">#         if not flag:</span>
+<span class="c1">#             # Delete replica if no edges retained.</span>
+<span class="c1">#             G.remove_node(i)</span>
+            
+            
+        <span class="c1">#delete all nodes with 0</span>
+        <span class="k">for</span> <span class="n">nd</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]:</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">nd</span><span class="p">)</span>
+            
+        <span class="n">mapping</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">yi</span><span class="p">,</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">yi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span> <span class="p">])</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">relabel_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">mapping</span><span class="p">)</span>
+        
+        <span class="c1">#print(G.degrees())</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+        
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+<span class="c1"># --------------- statistics for the null models ----------------</span>
+<span class="c1"># --------- degree distribution -----------</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Brendan Celii.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
