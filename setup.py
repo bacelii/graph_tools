@@ -9,16 +9,11 @@ def get_install_requires(filepath=None):
             targets = f.read().splitlines()
     return targets
 
-def external_git():
-    return [
-        "git+https://github.com/bacelii/python_tools.git"
-    ]
-    
-def install_require_git():
-    return []
-
 def get_links():
-    return []
+    return [
+        "git+https://github.com/bacelii/machine_learning_tools.git"
+    ]
+
 
 from setuptools import setup, find_packages
 from pathlib import Path
@@ -30,7 +25,7 @@ setup(
     author='Brendan Celii',
     author_email='brendanacelii',
     packages=find_packages(),  #teslls what packages to be included for the install
-    install_requires=get_install_requires() + install_require_git(), #external packages as dependencies
+    install_requires=get_install_requires(), #external packages as dependencies
     dependency_links = get_links(),
     # if wanted to install with the extra requirements use pip install -e ".[interactive]"
     extras_require={

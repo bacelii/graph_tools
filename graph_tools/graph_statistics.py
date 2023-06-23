@@ -1,5 +1,7 @@
 '''
 
+
+
 Useful python functions main from networkx
 for estimating network stats
 
@@ -8,6 +10,8 @@ Notes: most of functions orignially from /old_modules/graph_statistics_and_simul
 packages that need to be installed: 
 1) ndlib
 2) powerlaw
+
+
 
 '''
 from itertools import chain
@@ -1077,11 +1081,13 @@ def node_attribute_median(
     verbose = verbose   
     )
 
+
 #--- from graph_tools ---
 from . import graph_visualizations as gviz
 
 #--- from python_tools ---
 from python_tools import networkx_utils as xu
+
 
 adjacency_matrix = xu.adjacency_matrix
 modularity_matrix = xu.modularity_matrix

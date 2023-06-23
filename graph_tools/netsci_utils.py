@@ -1,8 +1,12 @@
 '''
 
+
+
 Note: The motifs it finds, if it finds 3 nodes for a motif,
 those 3 nodes are not used in double counting of another motif
 (NO DOUBLE COUNTING)
+
+
 
 '''
 import matplotlib.pyplot as plt
