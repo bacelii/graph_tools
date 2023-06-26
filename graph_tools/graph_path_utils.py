@@ -311,6 +311,9 @@ def shortest_path_distance_samples_perc_95_from_source_undirected(
     )
 
 
+def example():
+    print(f"ex func")
+
 
 #--- from python_tools ---
 from python_tools import networkx_utils as xu
