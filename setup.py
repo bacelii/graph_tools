@@ -1,3 +1,7 @@
+from pathlib import Path
+from setuptools import setup, find_packages
+from typing import List
+
 def get_install_requires(filepath=None):
     if filepath is None:
         filepath = "./"
@@ -11,12 +15,10 @@ def get_install_requires(filepath=None):
 
 def get_links():
     return [
-        "git+https://github.com/bacelii/machine_learning_tools.git"
+        "git+https://github.com/bacelii/python_tools.git"
     ]
 
 
-from setuptools import setup, find_packages
-from pathlib import Path
 
 setup(
     name='graph_tools', # the name of the package, which can be different than the folder when using pip instal

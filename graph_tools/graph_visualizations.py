@@ -2,6 +2,7 @@
 
 
 
+
 The parameters for plotting networkx graphs using nx.draw
 https://github.com/networkx/networkx/blob/main/networkx/drawing/nx_pylab.py#L584
 
@@ -87,6 +88,7 @@ https://github.com/networkx/networkx/blob/main/networkx/drawing/nx_pylab.py#L584
     kwds : optional keywords
         See networkx.draw_networkx_nodes(), networkx.draw_networkx_edges(), and
         networkx.draw_networkx_labels() for a description of optional keywords.
+
 
 
 
@@ -356,9 +358,9 @@ def plot_modularity_vs_spectral_partitioning(
 #--- from graph_tools ---
 from . import graph_statistics as gs
 
+
+from . import graph_visualizations as gviz
 #--- from python_tools ---
 from python_tools import matplotlib_utils as mu
 from python_tools import numpy_utils as nu
 from python_tools import pandas_utils as pu
-
-from . import graph_visualizations as gviz
