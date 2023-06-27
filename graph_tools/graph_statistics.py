@@ -1089,14 +1089,16 @@ def node_attribute_median(
 
 
 
-adjacency_matrix = xu.adjacency_matrix
-modularity_matrix = xu.modularity_matrix
-laplacian = xu.laplacian
+
 
 #--- from graph_tools ---
 from . import graph_visualizations as gviz
 
 #--- from python_tools ---
 from python_tools import networkx_utils as xu
+
+adjacency_matrix = xu.adjacency_matrix
+modularity_matrix = xu.modularity_matrix
+laplacian = xu.laplacian
 
 from . import graph_statistics as gs
