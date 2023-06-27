@@ -3,9 +3,11 @@
 
 
 
+
 Note: The motifs it finds, if it finds 3 nodes for a motif,
 those 3 nodes are not used in double counting of another motif
 (NO DOUBLE COUNTING)
+
 
 
 
@@ -93,6 +95,8 @@ def example_plot_3_node_motifs_comparison(
 
 
 
-from . import netsci_utils as nsu
+
 #--- from python_tools ---
 from python_tools import matplotlib_utils as mu
+
+from . import netsci_utils as nsu
