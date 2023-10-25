@@ -5,10 +5,10 @@ networkx>=2.5
 numpy>=1.19.5
 pandas>=1.1.5
 powerlaw>=1.5
-#python_tools>=0.0.1
+#datasci_tools>=0.0.1
 scipy>=1.5.4
 seaborn>=0.11.2
 tqdm>=4.62.2
 ipython
 ipython_genutils
-python_tools @ git+https://git@github.com/bacelii/python_tools.git
+datasci_tools @ git+https://git@github.com/bacelii/datasci_tools.git

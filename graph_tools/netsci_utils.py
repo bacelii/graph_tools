@@ -50,7 +50,7 @@ def example_plot_3_node_motifs():
     figsize = (20,10)
     fig,ax = plt.subplots(1,1,figsize=figsize)
 
-    from python_tools import matplotlib_utils as mu
+    from datasci_tools import matplotlib_utils as mu
     n_colors = 16
     node_color = mu.generate_non_randon_named_color_list(n_colors,colors_to_omit="black")
 
@@ -96,7 +96,7 @@ def example_plot_3_node_motifs_comparison(
 
 
 
-#--- from python_tools ---
-from python_tools import matplotlib_utils as mu
+#--- from datasci_tools ---
+from datasci_tools import matplotlib_utils as mu
 
 from . import netsci_utils as nsu

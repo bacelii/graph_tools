@@ -89,7 +89,7 @@ def degree_distribution_analysis(G,
         curr_degree_distr_median = np.median(curr_degree_distr)
 
         if verbose:
-            from python_tools import numpy_utils as nu
+            from datasci_tools import numpy_utils as nu
             print(f"{graph_title} {k} degree distribution mean = {nu.comma_str(curr_degree_distr_mean)},\n"
                   f"{graph_title} {k} degree distribution median = {nu.comma_str(curr_degree_distr_median)}")
 
@@ -1084,18 +1084,50 @@ def node_attribute_median(
     nodes = nodes,
     verbose = verbose   
     )
+    
+def degree_sequences(
+    A,
+    return_non_zero_degree_mask = True,
+    filter_away_disconnected_nodes = False,
+    ):
+    out_degree_sequence = xu.out_degree_sequence_from_adj(A)
+    in_degree_sequence = xu.in_degree_sequence_from_adj(A)
+    
+    if filter_away_disconnected_nodes:
+        good_map = (out_degree_sequence > 0) | (in_degree_sequence > 0)
+        in_degree_sequence = in_degree_sequence[good_map]
+        out_degree_sequence = out_degree_sequence[good_map]
+    else:
+        good_map = np.arange(0,len(A))
+    
+    return_value = [in_degree_sequence,out_degree_sequence]
+    
+    if return_non_zero_degree_mask:
+        return_value.append(good_map) 
+        
+    return return_value
 
 
+def n_reciprocal(A):
+    return int((A+A.T == 2).sum()/2)
 
+def reciprocity(A):
+    n = A.shape[0]
+    return (A+A.T == 2).sum() / float(n*(n-1))
 
+def sparsity(A,verbose = False):
+    n = A.shape[0]
+    return A.sum() / float(n*(n-1))
 
-
+    
+def n_edges_from_A(A):
+    return A.sum()
 
 #--- from graph_tools ---
 from . import graph_visualizations as gviz
 
-#--- from python_tools ---
-from python_tools import networkx_utils as xu
+#--- from datasci_tools ---
+from datasci_tools import networkx_utils as xu
 
 adjacency_matrix = xu.adjacency_matrix
 modularity_matrix = xu.modularity_matrix

@@ -170,7 +170,7 @@ def plot_degree_distribution(G,degree_type="in_and_out",
     plt.show()
     
     if print_degree_distribution_stats:
-        from python_tools import numpy_utils as nu
+        from datasci_tools import numpy_utils as nu
         mean_orig_multi_di = np.mean(degree_distribution_filtered)
         median_orig_multi_di = np.median(degree_distribution_filtered)
         print(f"Mean {degree_type} Degree = {nu.comma_str(np.round(mean_orig_multi_di,2))}\n"
@@ -363,9 +363,9 @@ def plot_modularity_vs_spectral_partitioning(
 #--- from graph_tools ---
 from . import graph_statistics as gs
 
-#--- from python_tools ---
-from python_tools import matplotlib_utils as mu
-from python_tools import numpy_utils as nu
-from python_tools import pandas_utils as pu
+#--- from datasci_tools ---
+from datasci_tools import matplotlib_utils as mu
+from datasci_tools import numpy_utils as nu
+from datasci_tools import pandas_utils as pu
 
 from . import graph_visualizations as gviz

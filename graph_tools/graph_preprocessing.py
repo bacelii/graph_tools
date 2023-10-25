@@ -47,9 +47,9 @@ def random_subgraph(
 
 
 
-#--- from python_tools ---
-from python_tools import networkx_utils as nx
-from python_tools import networkx_utils as xu
+#--- from datasci_tools ---
+from datasci_tools import networkx_utils as nx
+from datasci_tools import networkx_utils as xu
 
 largest_connected_component = xu.largest_connected_component
 

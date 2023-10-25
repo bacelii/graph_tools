@@ -316,7 +316,7 @@ def example():
 
 
 
-#--- from python_tools ---
-from python_tools import networkx_utils as xu
-from python_tools import tqdm_utils as tqdmu
-from python_tools.tqdm_utils import tqdm
+#--- from datasci_tools ---
+from datasci_tools import networkx_utils as xu
+from datasci_tools import tqdm_utils as tqdmu
+from datasci_tools.tqdm_utils import tqdm

@@ -574,6 +574,73 @@ def vertex_duplication_with_complement(n, p, p2, seed=None):
     return G
 
 
+from functools import cached_property
+class SynConnData:
+    """
+    Purpose: from an adjacency matrix, compute the
+    degree sequences and number of edges as a data-driven class
+    """
+    def __init__(
+        self,
+        G,
+        filter_away_disconnected_nodes = False,
+        **kwargs):
+        
+        self.G = G
+        self.A_syn = self.A_from_G(G)
+        
+        (self.in_degree_seq,
+         self.out_degree_seq,
+         self.non_zero_degree_mask) = gstat.degree_sequences(
+            self.A_syn,
+            filter_away_disconnected_nodes = filter_away_disconnected_nodes,
+        )
+        
+        self.A_syn = self.A_syn[
+            self.non_zero_degree_mask,:][
+            :,self.non_zero_degree_mask
+        ]
+            
+        self.n_edges = gstat.n_edges_from_A(self.A_syn)
+        
+        for k,v in kwargs.items():
+            setattr(self,k,v)
+            
+    def A_from_G(self,G):
+        A = xu.adjacency_matrix(G,weight = "n_synapses")
+        A[np.where(A > 0)] = 1
+        return A
+    
+    @cached_property
+    def edges(self):
+        return xu.edges(self.G)
+    
+    @cached_property
+    def n_edges_raw(self):
+        return len(self.edges)
+    
+    @cached_property
+    def nodes(self):
+        return xu.nodes(self.G)
+    
+    @cached_property
+    def edges_syn(self):
+        return xu.edgelist_from_adjacency_matrix(
+    self.A
+        )
+        
+    @cached_property
+    def n_edges_syn(self):
+        return self.A_syn.sum()
+        
+    @cached_property
+    def nodes_syn(self):
+        return np.arange(len(self.A_syn)) 
+
+from datasci_tools import networkx_utils as xu
+
+from . import graph_statistics as gstat
+
 # --------------- statistics for the null models ----------------
 # --------- degree distribution -----------
 

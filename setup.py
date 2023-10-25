@@ -11,7 +11,7 @@ https://stackoverflow.com/questions/32688688/how-to-write-setup-py-to-include-a-
 """
 def get_links():
     return [
-        #"python_tools @ git+https://git@github.com/bacelii/python_tools.git"
+        #"datasci_tools @ git+https://git@github.com/bacelii/datasci_tools.git"
     ]
 
 def get_install_requires(filepath=None):
@@ -29,7 +29,7 @@ def get_install_requires(filepath=None):
 
 def get_dependencies():
     return [
-        #"https://github.com/bacelii/python_tools.git"
+        #"https://github.com/bacelii/datasci_tools.git"
     ]
 
 setup(
