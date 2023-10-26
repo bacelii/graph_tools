@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>graph_tools.graph_statistics &mdash; graph-tools 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=af2ce170"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            graph-tools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">graph_tools</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">graph-tools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">graph_tools.graph_statistics</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for graph_tools.graph_statistics</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+
+
+
+
+
+<span class="sd">Useful python functions main from networkx</span>
+<span class="sd">for estimating network stats</span>
+
+<span class="sd">Notes: most of functions orignially from /old_modules/graph_statistics_and_simulations.py</span>
+
+<span class="sd">packages that need to be installed: </span>
+<span class="sd">1) ndlib</span>
+<span class="sd">2) powerlaw</span>
+
+
+
+
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">networkx.algorithms</span> <span class="kn">import</span> <span class="n">approximation</span> <span class="k">as</span> <span class="n">app</span>
+<span class="kn">from</span> <span class="nn">networkx.algorithms</span> <span class="kn">import</span> <span class="n">distance_measures</span> <span class="k">as</span> <span class="n">dist</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">ndlib</span>
+<span class="kn">import</span> <span class="nn">ndlib.models.ModelConfig</span> <span class="k">as</span> <span class="nn">mc</span>
+<span class="kn">import</span> <span class="nn">ndlib.models.epidemics</span> <span class="k">as</span> <span class="nn">ep</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">powerlaw</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+
+
+
+
+
+<span class="c1"># ------------- Degree Distributions ------------</span>
+<div class="viewcode-block" id="degree_distribution"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.degree_distribution">[docs]</a><span class="k">def</span> <span class="nf">degree_distribution</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">percentile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">degree_type</span><span class="o">=</span><span class="s2">&quot;in_and_out&quot;</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Purpose: To find the degree distribution of a graph</span>
+<span class="sd">    (and optionally apply a node mask or restrict to a percentile of nodes)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">nodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+    
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xu</span><span class="o">.</span><span class="n">get_node_degree</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">nodes</span><span class="p">,</span><span class="n">degree_type</span><span class="o">=</span><span class="n">degree_type</span><span class="p">))</span>
+    
+    <span class="k">if</span> <span class="n">percentile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">dist</span><span class="p">[</span><span class="n">dist</span><span class="o">&lt;</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span><span class="n">percentile</span><span class="p">)]</span>
+        
+    <span class="k">return</span> <span class="n">dist</span></div>
+
+
+<div class="viewcode-block" id="degree_distribution_analysis"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.degree_distribution_analysis">[docs]</a><span class="k">def</span> <span class="nf">degree_distribution_analysis</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                                 <span class="n">graph_title</span><span class="o">=</span><span class="s2">&quot;Graph (No Title)&quot;</span><span class="p">,</span>
+                    <span class="n">degree_type_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;in_and_out&quot;</span><span class="p">,</span><span class="s2">&quot;in&quot;</span><span class="p">,</span><span class="s2">&quot;out&quot;</span><span class="p">],</span>
+                    <span class="n">percentile</span> <span class="o">=</span> <span class="mf">99.5</span><span class="p">,</span>
+                    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">plot_distributions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                 <span class="o">**</span><span class="n">kwargs</span>
+                                <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Purpose: Will get statistics and possibly </span>
+<span class="sd">    plot degree distribution data for a graph</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="n">degree_dist_stats</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">degree_type_list</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">curr_degree_distr</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">degree_distribution</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                                                       <span class="n">degree_type</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+                                                        <span class="n">percentile</span><span class="o">=</span><span class="n">percentile</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">plot_distributions</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">graph_title</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> distribution can&#39;t be graphed&quot;</span><span class="p">)</span>
+            <span class="n">degree_dist_stats</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">degree_dist_stats</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">_median&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">continue</span>
+
+        <span class="n">curr_degree_distr_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">curr_degree_distr</span><span class="p">)</span>
+        <span class="n">curr_degree_distr_median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">curr_degree_distr</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">datasci_tools</span> <span class="kn">import</span> <span class="n">numpy_utils</span> <span class="k">as</span> <span class="n">nu</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">graph_title</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> degree distribution mean = </span><span class="si">{</span><span class="n">nu</span><span class="o">.</span><span class="n">comma_str</span><span class="p">(</span><span class="n">curr_degree_distr_mean</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+                  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">graph_title</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> degree distribution median = </span><span class="si">{</span><span class="n">nu</span><span class="o">.</span><span class="n">comma_str</span><span class="p">(</span><span class="n">curr_degree_distr_median</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">degree_dist_stats</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">curr_degree_distr_mean</span>
+        <span class="n">degree_dist_stats</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">_median&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">curr_degree_distr_median</span>
+                                   
+        <span class="k">if</span> <span class="n">plot_distributions</span><span class="p">:</span>
+            <span class="n">gviz</span><span class="o">.</span><span class="n">plot_degree_distribution</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                                         <span class="n">degree_type</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+                                         <span class="n">title_append</span><span class="o">=</span><span class="n">graph_title</span><span class="p">,</span>
+                                          <span class="n">degree_distribution</span><span class="o">=</span><span class="n">curr_degree_distr</span><span class="p">,</span>
+                                         <span class="n">print_degree_distribution_stats</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                          <span class="o">**</span><span class="n">kwargs</span>
+                                         <span class="p">)</span>
+    <span class="k">return</span> <span class="n">degree_dist_stats</span></div>
+
+<div class="viewcode-block" id="degree_distribution_stat"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.degree_distribution_stat">[docs]</a><span class="k">def</span> <span class="nf">degree_distribution_stat</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">stat</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="n">percentile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">degree_type</span><span class="o">=</span><span class="s2">&quot;in_and_out&quot;</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">stat</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">stat</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="p">,</span><span class="n">stat</span><span class="p">)</span>
+        
+    <span class="c1"># print(f&quot;degree_type = {degree_type}&quot;)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">stat</span><span class="p">(</span><span class="n">degree_distribution</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">nodes</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span>
+        <span class="n">percentile</span><span class="o">=</span><span class="n">percentile</span><span class="p">,</span>
+        <span class="n">degree_type</span><span class="o">=</span><span class="n">degree_type</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">))</span>
+    
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stat</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">degree_type</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="degree_distribution_mean"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.degree_distribution_mean">[docs]</a><span class="k">def</span> <span class="nf">degree_distribution_mean</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">percentile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">degree_type</span><span class="o">=</span><span class="s2">&quot;in_and_out&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="k">return</span> <span class="n">degree_distribution_stat</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">nodes</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span>
+        <span class="n">stat</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+        <span class="n">percentile</span><span class="o">=</span><span class="n">percentile</span><span class="p">,</span>
+        <span class="n">degree_type</span><span class="o">=</span><span class="n">degree_type</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="degree_distribution_median"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.degree_distribution_median">[docs]</a><span class="k">def</span> <span class="nf">degree_distribution_median</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">percentile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">degree_type</span><span class="o">=</span><span class="s2">&quot;in_and_out&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="k">return</span> <span class="n">degree_distribution_stat</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">nodes</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span>
+        <span class="n">stat</span> <span class="o">=</span> <span class="s2">&quot;median&quot;</span><span class="p">,</span>
+        <span class="n">percentile</span><span class="o">=</span><span class="n">percentile</span><span class="p">,</span>
+        <span class="n">degree_type</span><span class="o">=</span><span class="n">degree_type</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="in_degree_mean"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.in_degree_mean">[docs]</a><span class="k">def</span> <span class="nf">in_degree_mean</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">percentile</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+    
+    <span class="k">return</span> <span class="n">degree_distribution_mean</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">,</span>
+        <span class="n">percentile</span> <span class="o">=</span> <span class="n">percentile</span><span class="p">,</span>
+        <span class="n">degree_type</span><span class="o">=</span><span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="out_degree_mean"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.out_degree_mean">[docs]</a><span class="k">def</span> <span class="nf">out_degree_mean</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">percentile</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+    
+    <span class="k">return</span> <span class="n">degree_distribution_mean</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">,</span>
+        <span class="n">percentile</span> <span class="o">=</span> <span class="n">percentile</span><span class="p">,</span>
+        <span class="n">degree_type</span><span class="o">=</span><span class="s2">&quot;out&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="in_degree_median"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.in_degree_median">[docs]</a><span class="k">def</span> <span class="nf">in_degree_median</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">percentile</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+    
+    <span class="k">return</span> <span class="n">degree_distribution_median</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">,</span>
+        <span class="n">percentile</span> <span class="o">=</span> <span class="n">percentile</span><span class="p">,</span>
+        <span class="n">degree_type</span><span class="o">=</span><span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="out_degree_median"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.out_degree_median">[docs]</a><span class="k">def</span> <span class="nf">out_degree_median</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">percentile</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+    
+    <span class="k">return</span> <span class="n">degree_distribution_median</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">,</span>
+        <span class="n">percentile</span> <span class="o">=</span> <span class="n">percentile</span><span class="p">,</span>
+        <span class="n">degree_type</span><span class="o">=</span><span class="s2">&quot;out&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="c1">#-------------- Functions that are available for graph stats ------------------ #</span>
+<span class="c1">#adding attributes to functions</span>
+<div class="viewcode-block" id="run_options"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.run_options">[docs]</a><span class="k">class</span> <span class="nc">run_options</span><span class="p">:</span>
+<div class="viewcode-block" id="run_options.__init__"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.run_options.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directional</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">directional</span> <span class="o">=</span> <span class="n">directional</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiedge</span> <span class="o">=</span> <span class="n">multiedge</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">directional</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directional</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">multiedge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiedge</span>
+        <span class="k">return</span> <span class="n">f</span></div>
+    
+    
+<span class="c1"># ------------- basic general stats ----------------</span>
+
+<div class="viewcode-block" id="n_triangles"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.n_triangles">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">n_triangles</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="n">triangle_dict</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">triangles</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+    <span class="n">n_triangles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">triangle_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="o">/</span><span class="mi">3</span>
+    <span class="k">return</span> <span class="n">n_triangles</span></div>
+
+<div class="viewcode-block" id="n_edges_empirical"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.n_edges_empirical">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">n_edges_empirical</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="longest_shortest_path"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.longest_shortest_path">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">longest_shortest_path</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">dist</span><span class="o">.</span><span class="n">diameter</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="average_shortest_path_length"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.average_shortest_path_length">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">average_shortest_path_length</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">average_shortest_path_length</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></div>
+
+
+<span class="n">diameter</span> <span class="o">=</span> <span class="n">longest_shortest_path</span>
+
+<div class="viewcode-block" id="transitivity"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.transitivity">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">transitivity</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    transitivity: Fraction of all possible traingles present in G</span>
+<span class="sd">    Triad = 2 edges with a shared vertex</span>
+
+<span class="sd">    Transitivity = 3* # of triangles/ # of traids</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">transitivity</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="node_connectivity"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.node_connectivity">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">node_connectivity</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">app</span><span class="o">.</span><span class="n">node_connectivity</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="size_maximum_clique"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.size_maximum_clique">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">size_maximum_clique</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    clique is just subset of vertices group where every</span>
+<span class="sd">    vertex in group is connected (subgraph induced is complete)</span>
+
+<span class="sd">    Maximum clique = clique of the largest size in a graph</span>
+<span class="sd">    clique number = number of vertices in a maxium clique</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">graph_clique_number</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="n_maximal_cliques"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.n_maximal_cliques">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">n_maximal_cliques</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    clique is just subset of vertices group where every</span>
+<span class="sd">    vertex in group is connected (subgraph induced is complete)</span>
+
+<span class="sd">    Maximal clique = clique that cannot be extended by including one or more adjacent vertex </span>
+<span class="sd">    (aka not subset of larger clique)</span>
+<span class="sd">    Maximum clique = clique of the largest size in a graph</span>
+<span class="sd">    clique number = number of vertices in a maxium clique</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">graph_number_of_cliques</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="average_degree_connectivity"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.average_degree_connectivity">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">average_degree_connectivity</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Returns dictionary that maps nodes with a certain degree to the average degree of the nearest neightbors&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">average_degree_connectivity</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="average_clustering"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.average_clustering">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">average_clustering</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    local clustering: theoretically the fraction of traingles that actually exist / </span>
+<span class="sd">                                                    all possible traingles in its neighborhood</span>
+<span class="sd">    How it is computed: </span>
+<span class="sd">    1) choose random node</span>
+<span class="sd">    2) choose 2 neighbors at random</span>
+<span class="sd">    3) check if traingle (if yes increment traingle counter)</span>
+<span class="sd">    4) Repeat and compute number with triangle_counter/ trials</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">average_clustering</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="min_weighted_vertex_cover_len"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.min_weighted_vertex_cover_len">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">min_weighted_vertex_cover_len</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Returns length of Minimum number of vertices so that all edges are coincident on at least one vertice</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">min_weighted_vertex_cover</span><span class="p">(</span><span class="n">G</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="tree_number"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.tree_number">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">tree_number</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Returns an approximation of the tree width of the graph (aka how tree-like it is):</span>
+<span class="sd">    The lower the value the more tree-like the graph is</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">app</span><span class="o">.</span><span class="n">treewidth_min_degree</span><span class="p">(</span><span class="n">G</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<span class="c1"># ------ newly added statistics 3/19 ------------ #</span>
+
+<div class="viewcode-block" id="degree_distribution_mean_simple"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.degree_distribution_mean_simple">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">degree_distribution_mean_simple</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">sequences</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="number_connected_components"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.number_connected_components">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">number_connected_components</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">number_connected_components</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></div>
+
+<span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">largest_connected_component_size</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">Gcc</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">G</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">Gcc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="largest_connected_component_size"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.largest_connected_component_size">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">largest_connected_component_size</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">Gcc</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">G</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">Gcc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+<span class="c1"># ------------- New Functions that were added 3/25 ------------------------ #</span>
+<div class="viewcode-block" id="inverse_average_shortest_path"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.inverse_average_shortest_path">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">inverse_average_shortest_path</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="n">Gcc</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">G</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">average_shortest_path_length</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">Gcc</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="n">sp</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="n">sp</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+    
+    
+
+
+<span class="c1"># - For the percolation - #</span>
+<span class="k">def</span> <span class="nf">_get_vertex_order</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">selection_type</span><span class="o">=</span><span class="s2">&quot;random&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">selection_type</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">selection_type</span> <span class="o">==</span> <span class="s2">&quot;degree&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Will organize from highest to lowest degree&quot;&quot;&quot;</span>
+        <span class="n">degree_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">degree_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">degree_dict</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">degree_dict</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">degree_dict</span>
+
+        <span class="c1">#get the order of degree</span>
+        <span class="n">order_degrees</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">degree_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+        <span class="n">node_order</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">order_degrees</span><span class="p">:</span>
+            <span class="n">node_order</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">degree_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="n">node_order</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Invalid Selection Type&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="run_site_percolation"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.run_site_percolation">[docs]</a><span class="k">def</span> <span class="nf">run_site_percolation</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">vertex_order_type</span><span class="o">=</span><span class="s2">&quot;random&quot;</span><span class="p">,</span><span class="n">n_iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="n">total_runs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n_iterations</span><span class="p">)):</span>
+        <span class="n">current_run_results</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        1) Start with empty network. Number of clusters, c = 0, currently in network</span>
+<span class="sd">        Choose at random the order in which vertices will be added to the network</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">clusters</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span> <span class="c1">#starting out the clusters list as empyt</span>
+        <span class="n">vertex_order</span> <span class="o">=</span> <span class="n">_get_vertex_order</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">vertex_order_type</span><span class="p">)</span>
+
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        2) Add the next vertex in list to the network initially with no edges</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vertex_labels</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vertex_order</span><span class="p">):</span>
+            <span class="c1">#print(f&quot;Working on vertex {v}&quot;)</span>
+
+<span class="w">            </span><span class="sd">&quot;&quot;&quot; 2b)</span>
+<span class="sd">            - increase the cluster count by 1 (because the new vertex is initially a cluster of its own)</span>
+<span class="sd">            - Make the cluster size of one</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">max_index_plus_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">clusters</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">clusters</span><span class="p">[</span><span class="n">max_index_plus_1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">vertex_labels</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_index_plus_1</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">clusters</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">vertex_labels</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">continue</span>
+
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            3) Go through the edges attached to newly added vertex and add the edges where the other </span>
+<span class="sd">            vertex already exists in the network</span>
+
+<span class="sd">            4) For each edge added, check if the vertices have the same cluster group number:</span>
+<span class="sd">            - if yes then do nothing</span>
+<span class="sd">            - if no, relabel the smaller cluster the same cluster number as the bigger cluster number</span>
+<span class="sd">            - update the sizes of the 2 clusters from which formed</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">already_added_v</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">vertex_order</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+            <span class="k">for</span> <span class="n">a_v</span> <span class="ow">in</span> <span class="n">already_added_v</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">vertex_labels</span><span class="p">[</span><span class="n">a_v</span><span class="p">]</span> <span class="o">!=</span> <span class="n">vertex_labels</span><span class="p">[</span><span class="n">v</span><span class="p">]:</span>
+                    <span class="n">index_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">([</span><span class="n">clusters</span><span class="p">[</span><span class="n">vertex_labels</span><span class="p">[</span><span class="n">a_v</span><span class="p">]],</span><span class="n">clusters</span><span class="p">[</span><span class="n">vertex_labels</span><span class="p">[</span><span class="n">v</span><span class="p">]]])</span>
+                    <span class="k">if</span> <span class="n">index_max</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1">#need to change all the labels with v</span>
+                        <span class="n">replaced_cluster</span> <span class="o">=</span> <span class="n">vertex_labels</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                        <span class="n">indexes_to_change</span> <span class="o">=</span> <span class="p">[</span><span class="n">jj</span> <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="n">vertex_labels</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">vertex_labels</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">==</span> <span class="n">vertex_labels</span><span class="p">[</span><span class="n">v</span><span class="p">]]</span>
+                        <span class="n">final_cluster</span> <span class="o">=</span> <span class="n">vertex_labels</span><span class="p">[</span><span class="n">a_v</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">replaced_cluster</span> <span class="o">=</span> <span class="n">vertex_labels</span><span class="p">[</span><span class="n">a_v</span><span class="p">]</span>
+                        <span class="n">indexes_to_change</span> <span class="o">=</span> <span class="p">[</span><span class="n">jj</span> <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="n">vertex_labels</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">vertex_labels</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">==</span> <span class="n">vertex_labels</span><span class="p">[</span><span class="n">a_v</span><span class="p">]]</span>
+                        <span class="n">final_cluster</span> <span class="o">=</span> <span class="n">vertex_labels</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+
+                    <span class="c1">#change the labels</span>
+                    <span class="k">for</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">indexes_to_change</span><span class="p">:</span>
+                        <span class="n">vertex_labels</span><span class="p">[</span><span class="n">vv</span><span class="p">]</span> <span class="o">=</span> <span class="n">final_cluster</span>
+
+                    <span class="n">replaced_size</span> <span class="o">=</span> <span class="n">clusters</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">replaced_cluster</span><span class="p">)</span>
+                    <span class="n">clusters</span><span class="p">[</span><span class="n">final_cluster</span><span class="p">]</span> <span class="o">+=</span> <span class="n">replaced_size</span>
+
+            <span class="n">current_run_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">clusters</span><span class="o">.</span><span class="n">values</span><span class="p">()]))</span>
+
+
+            <span class="c1">#Done adding that vertex and will continue on to next vertex</span>
+            <span class="c1">#print(f&quot;clusters = {clusters}&quot;)</span>
+
+            <span class="n">total_runs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_run_results</span><span class="p">)</span>
+    <span class="n">total_runs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">total_runs</span><span class="p">)</span>
+    
+    <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">comb</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="n">S_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">total_runs</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1">#calculate s_phi : average largest cluster size as a functin of the occupancy probability</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">1.05</span><span class="p">,</span><span class="mf">0.05</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">s_phi</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">comb</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">r_curr</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">phi_curr</span><span class="o">**</span><span class="n">r_curr</span><span class="p">)</span><span class="o">*</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">phi_curr</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">n</span><span class="o">-</span> <span class="n">r_curr</span><span class="p">))</span><span class="o">*</span><span class="n">S_r_curr</span>
+                        <span class="k">for</span> <span class="n">r_curr</span><span class="p">,</span><span class="n">S_r_curr</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">S_r</span><span class="p">)])</span> <span class="k">for</span> <span class="n">phi_curr</span> <span class="ow">in</span> <span class="n">phi</span><span class="p">]</span>
+    <span class="n">s_phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">s_phi</span><span class="p">)</span><span class="o">/</span><span class="n">n</span>
+    
+    <span class="k">return</span> <span class="n">s_phi</span><span class="p">,</span><span class="n">phi</span></div>
+    
+
+
+<div class="viewcode-block" id="random_degree_site_percolation"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.random_degree_site_percolation">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">random_degree_site_percolation</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">n_iterations</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+    <span class="n">random_degree_site_percolation</span><span class="o">.</span><span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;area_above_identity_random_percol&quot;</span><span class="p">,</span>
+                                                <span class="s2">&quot;area_below_identity_random_percol&quot;</span><span class="p">,</span>
+                                                <span class="s2">&quot;area_above_identity_degree_percol&quot;</span><span class="p">,</span>
+                                                <span class="s2">&quot;area_below_identity_degree_percol&quot;</span><span class="p">]</span>
+    <span class="n">s_phi_barabasi_rand</span><span class="p">,</span><span class="n">phi_barabasi_rand</span><span class="o">=</span> <span class="n">run_site_percolation</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="s2">&quot;random&quot;</span><span class="p">,</span><span class="n">n_iterations</span><span class="p">)</span>
+    <span class="n">s_phi_barabasi_degree</span><span class="p">,</span><span class="n">phi_barabasi_degree</span><span class="o">=</span> <span class="n">run_site_percolation</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="s2">&quot;degree&quot;</span><span class="p">,</span><span class="n">n_iterations</span><span class="p">)</span>
+
+    <span class="n">rand_diff</span> <span class="o">=</span> <span class="n">s_phi_barabasi_rand</span> <span class="o">-</span> <span class="n">phi_barabasi_rand</span>
+    <span class="n">degree_diff</span> <span class="o">=</span> <span class="n">s_phi_barabasi_degree</span> <span class="o">-</span> <span class="n">phi_barabasi_degree</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">phi_barabasi_rand</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">phi_barabasi_rand</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">rand_diff_positive</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rand_diff</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">rand_diff_negative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rand_diff</span><span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">degree_diff_positive</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">degree_diff</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">degree_diff_negative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">degree_diff</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">rand_diff</span><span class="p">[</span><span class="n">rand_diff_positive</span><span class="p">],</span><span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">),</span>
+     <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">rand_diff</span><span class="p">[</span><span class="n">rand_diff_negative</span><span class="p">],</span><span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">),</span>
+     <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">degree_diff</span><span class="p">[</span><span class="n">degree_diff_positive</span><span class="p">],</span><span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">),</span>
+     <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">degree_diff</span><span class="p">[</span><span class="n">degree_diff_negative</span><span class="p">],</span><span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">))</span></div>
+
+<span class="c1"># - End of Percolation - #</span>
+
+<span class="c1"># - Start of Beta Epidemic Stat -- #</span>
+    
+
+
+<div class="viewcode-block" id="pandemic_beta_average"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.pandemic_beta_average">[docs]</a><span class="k">def</span> <span class="nf">pandemic_beta_average</span><span class="p">(</span>
+                                <span class="n">graph</span><span class="p">,</span>
+                                <span class="n">average_iterations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                                <span class="n">n_time_iterations</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+                                <span class="n">initial_infected_prop</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+                                <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+                                <span class="n">beta_start</span> <span class="o">=</span> <span class="mf">0.00001</span><span class="p">,</span>
+                                <span class="n">current_jump</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                                <span class="n">pandemic_threshold</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
+                                <span class="n">pandemic_dev</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+                                <span class="n">max_iterations</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+                                <span class="n">use_optimized_beta_finder</span><span class="o">=</span><span class="kc">False</span>
+                              <span class="p">):</span>
+    <span class="n">arg_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">n_time_iterations</span> <span class="o">=</span> <span class="n">n_time_iterations</span><span class="p">,</span>
+        <span class="n">initial_infected_prop</span> <span class="o">=</span> <span class="n">initial_infected_prop</span><span class="p">,</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span><span class="p">,</span>
+        <span class="n">beta_start</span> <span class="o">=</span> <span class="n">beta_start</span><span class="p">,</span>
+        <span class="n">current_jump</span><span class="o">=</span><span class="n">current_jump</span><span class="p">,</span>
+        <span class="n">pandemic_threshold</span> <span class="o">=</span> <span class="n">pandemic_threshold</span><span class="p">,</span>
+        <span class="n">pandemic_dev</span> <span class="o">=</span> <span class="n">pandemic_dev</span><span class="p">,</span>
+        <span class="n">max_iterations</span><span class="o">=</span><span class="n">max_iterations</span>
+            <span class="p">)</span>
+    
+    <span class="n">pandemic_beta</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">average_iterations</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    Working on Run </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">percent_affected_history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">retry_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">max_retry</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">percent_affected_history</span><span class="p">)</span><span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">percent_affected_history</span><span class="p">,</span><span class="n">beta_history</span> <span class="o">=</span> <span class="n">find_pandemic_beta</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="o">**</span><span class="n">arg_dict</span><span class="p">)</span>
+            <span class="n">retry_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">retry_counter</span> <span class="o">&gt;</span> <span class="n">max_retry</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find right Beta after </span><span class="si">{</span><span class="n">max_retry</span><span class="si">}</span><span class="s2"> tries: returning Last value hit: </span><span class="si">{</span><span class="n">beta_history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">beta_history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1">#raise Exception(f&quot;Could not find right Beta after {max_retry} tries&quot;)</span>
+        <span class="n">optimal_beta</span> <span class="o">=</span> <span class="n">beta_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">pandemic_beta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">optimal_beta</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        now adjust the beta_start and the current jump based on the history </span>
+<span class="sd">        before the next run</span>
+<span class="sd">        </span>
+<span class="sd">        Rule: Find the optimal beta</span>
+<span class="sd">        starting_beta = optimal_beta - 3*last_jump</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="k">if</span> <span class="n">use_optimized_beta_finder</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">beta_history</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;beta_history= </span><span class="si">{</span><span class="n">beta_history</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">last_jump_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">beta_history</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">beta_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">arg_dict</span><span class="p">[</span><span class="s2">&quot;beta_start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">optimal_beta</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">last_jump_size</span>
+                <span class="n">arg_dict</span><span class="p">[</span><span class="s2">&quot;current_jump&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">last_jump_size</span>
+            
+        
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pandemic_beta</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="find_pandemic_beta"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.find_pandemic_beta">[docs]</a><span class="k">def</span> <span class="nf">find_pandemic_beta</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span>
+                       <span class="n">n_time_iterations</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+                        <span class="n">initial_infected_prop</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+                        <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+                        <span class="n">beta_start</span> <span class="o">=</span> <span class="mf">0.00001</span><span class="p">,</span>
+                        <span class="n">current_jump</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                        <span class="n">pandemic_threshold</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
+                        <span class="n">pandemic_dev</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+                       <span class="n">max_iterations</span><span class="o">=</span><span class="mi">50</span>
+                       <span class="p">):</span>
+    
+    <span class="n">print_flag</span> <span class="o">=</span> <span class="kc">False</span>
+    
+    <span class="k">def</span> <span class="nf">_calculate_percent_affected</span><span class="p">(</span><span class="n">trends</span><span class="p">):</span>
+        <span class="n">n_recovered</span> <span class="o">=</span> <span class="n">trends</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;trends&quot;</span><span class="p">][</span><span class="s2">&quot;node_count&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">n_infected</span> <span class="o">=</span> <span class="n">trends</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;trends&quot;</span><span class="p">][</span><span class="s2">&quot;node_count&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">percent_affected</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_recovered</span> <span class="o">+</span> <span class="n">n_infected</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">percent_affected</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">---- New Run: Finding Beta for [</span><span class="si">{</span><span class="n">pandemic_threshold</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">pandemic_dev</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">pandemic_threshold</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pandemic_dev</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+         <span class="sa">f</span><span class="s2">&quot;    Starting with beta_start=</span><span class="si">{</span><span class="n">beta_start</span><span class="si">}</span><span class="s2">,current_jump=</span><span class="si">{</span><span class="n">current_jump</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">percent_affected</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">beta_start</span>
+    
+    <span class="n">beta_history</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">percent_affected_history</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    
+    <span class="k">while</span> <span class="p">(</span><span class="n">percent_affected</span> <span class="o">&gt;</span> <span class="n">pandemic_threshold</span> <span class="o">+</span> <span class="n">pandemic_dev</span>
+           <span class="ow">or</span> <span class="n">percent_affected</span> <span class="o">&lt;</span> <span class="n">pandemic_threshold</span> <span class="o">-</span> <span class="n">pandemic_dev</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">print_flag</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current loop </span><span class="si">{</span><span class="n">counter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;</span> <span class="n">max_iterations</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Max iterations hit before convergence on Beta, going to try again&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[],[</span><span class="n">beta</span><span class="p">]</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">SIRModel</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+        <span class="c1">#Setting the model configuration</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Configuration</span><span class="p">()</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">add_model_parameter</span><span class="p">(</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">add_model_parameter</span><span class="p">(</span><span class="s1">&#39;gamma&#39;</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">add_model_parameter</span><span class="p">(</span><span class="s2">&quot;fraction_infected&quot;</span><span class="p">,</span> <span class="n">initial_infected_prop</span><span class="p">)</span> <span class="c1">#not setting the initial nodes that are infected but just the initial fraction</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">set_initial_status</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="c1"># Simulation</span>
+        <span class="n">iterations</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">iteration_bunch</span><span class="p">(</span><span class="n">n_time_iterations</span><span class="p">)</span> 
+        <span class="n">trends</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">build_trends</span><span class="p">(</span><span class="n">iterations</span><span class="p">)</span> <span class="c1"># builds the  dict_keys([&#39;node_count&#39;, &#39;status_delta&#39;]) time series</span>
+        <span class="n">percent_affected</span> <span class="o">=</span> <span class="n">_calculate_percent_affected</span><span class="p">(</span><span class="n">trends</span><span class="p">)</span>
+
+        <span class="n">beta_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+        <span class="n">percent_affected_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">percent_affected</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">print_flag</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;With beta = </span><span class="si">{</span><span class="n">beta</span><span class="si">}</span><span class="s2">, percent_affected = </span><span class="si">{</span><span class="n">percent_affected</span><span class="si">}</span><span class="s2">, current_jump=</span><span class="si">{</span><span class="n">current_jump</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1">#Adjust the Beta</span>
+        <span class="k">if</span> <span class="n">percent_affected</span> <span class="o">&lt;</span> <span class="n">pandemic_threshold</span> <span class="o">-</span> <span class="n">pandemic_dev</span><span class="p">:</span>
+            <span class="n">beta</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">current_jump</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">percent_affected</span> <span class="o">&gt;</span> <span class="n">pandemic_threshold</span> <span class="o">+</span> <span class="n">pandemic_dev</span><span class="p">:</span>
+            <span class="c1">#print(&quot;beta_history[-2] = &quot; + str(beta_history[-2]))</span>
+            <span class="k">if</span> <span class="n">percent_affected_history</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">pandemic_threshold</span> <span class="o">-</span> <span class="n">pandemic_dev</span><span class="p">:</span> <span class="c1">#if jumped over the answer</span>
+                <span class="k">if</span> <span class="n">print_flag</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Jumped over answer&quot;</span><span class="p">)</span>
+                <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="n">beta</span> <span class="o">-</span> <span class="n">current_jump</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+                <span class="n">current_jump</span> <span class="o">=</span> <span class="n">current_jump</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="n">current_jump</span><span class="o">*</span><span class="mf">0.01</span>
+                <span class="k">if</span> <span class="n">current_jump</span> <span class="o">&lt;</span> <span class="mf">0.000001</span><span class="p">:</span>
+                    <span class="n">current_jump</span> <span class="o">=</span> <span class="mf">0.000001</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="n">beta</span> <span class="o">-</span> <span class="n">current_jump</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">percent_affected_history</span><span class="p">,</span><span class="n">beta_history</span></div>
+
+
+<div class="viewcode-block" id="pandemic_beta"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.pandemic_beta">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">pandemic_beta</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">-------Starting Pandemic Beta -------&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_edges = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">())</span><span class="si">}</span><span class="s2">, n_nodes = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">final_beta_average</span> <span class="o">=</span> <span class="n">pandemic_beta_average</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;final_beta_average = </span><span class="si">{</span><span class="n">final_beta_average</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total time for optimized = </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">final_beta_average</span></div>
+
+
+
+<span class="c1"># - End of Beta Epidemic Stat -- #</span>
+
+
+<span class="c1">#eigenvalue measurements</span>
+<div class="viewcode-block" id="largest_adj_eigen_value"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.largest_adj_eigen_value">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">largest_adj_eigen_value</span><span class="p">(</span><span class="n">G1</span><span class="p">):</span>
+    <span class="n">Adj</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">convert_matrix</span><span class="o">.</span><span class="n">to_numpy_matrix</span><span class="p">(</span><span class="n">G1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">Adj</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="smallest_adj_eigen_value"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.smallest_adj_eigen_value">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">smallest_adj_eigen_value</span><span class="p">(</span><span class="n">G1</span><span class="p">):</span>
+    <span class="n">Adj</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">convert_matrix</span><span class="o">.</span><span class="n">to_numpy_matrix</span><span class="p">(</span><span class="n">G1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">Adj</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="largest_laplacian_eigen_value"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.largest_laplacian_eigen_value">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">largest_laplacian_eigen_value</span><span class="p">(</span><span class="n">G1</span><span class="p">):</span>
+    <span class="n">laplacian</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="o">.</span><span class="n">toarray</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">laplacian_matrix</span><span class="p">(</span><span class="n">G1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">laplacian</span><span class="p">)))</span></div>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">SHOULDN&#39;T REALLY HAVE TO USE THIS BECAUSE IT WILL ALWAYS BE 0</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="smallest_laplacian_eigen_value"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.smallest_laplacian_eigen_value">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">smallest_laplacian_eigen_value</span><span class="p">(</span><span class="n">G1</span><span class="p">):</span>
+    <span class="n">laplacian</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="o">.</span><span class="n">toarray</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">laplacian_matrix</span><span class="p">(</span><span class="n">G1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">laplacian</span><span class="p">)))</span></div>
+
+<span class="c1">#*** THIS IS ALSO CALLED THE ALGEBRAIC CONNECTIVITY</span>
+<div class="viewcode-block" id="second_smallest_laplacian_eigen_value"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.second_smallest_laplacian_eigen_value">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">second_smallest_laplacian_eigen_value</span><span class="p">(</span><span class="n">G1</span><span class="p">):</span>
+    <span class="n">laplacian</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="o">.</span><span class="n">toarray</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">laplacian_matrix</span><span class="p">(</span><span class="n">G1</span><span class="p">))</span>
+    <span class="n">sorted_eig_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">laplacian</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">sorted_eig_vals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="top_heavy_percentage"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.top_heavy_percentage">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">top_heavy_percentage</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">top_percentage</span> <span class="o">=</span> <span class="mf">0.90</span><span class="p">):</span>
+    <span class="n">degree_sequence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">degree</span><span class="p">())[:,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">ordered_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">degree_sequence</span><span class="p">)</span>
+
+
+    <span class="n">index_to_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">degree_sequence</span><span class="p">)</span><span class="o">*</span><span class="n">top_percentage</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+    <span class="c1">#print(f&quot;index_to_start = {index_to_start}&quot;)</span>
+    <span class="n">top_nodes_to_keep</span> <span class="o">=</span> <span class="n">ordered_nodes</span><span class="p">[</span><span class="n">index_to_start</span><span class="p">:]</span>
+    <span class="c1">#print(f&quot;top_nodes_to_keep = {top_nodes_to_keep}&quot;)</span>
+
+    <span class="n">nodes_nbrs</span> <span class="o">=</span> <span class="n">G1</span><span class="o">.</span><span class="n">adj</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="n">top_neighbors</span> <span class="o">=</span> <span class="p">[</span><span class="nb">set</span><span class="p">(</span><span class="n">v_nbrs</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span><span class="n">v_nbrs</span> <span class="ow">in</span> <span class="n">nodes_nbrs</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">top_nodes_to_keep</span><span class="p">]</span>
+    <span class="n">top_neighbors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">top_nodes_to_keep</span><span class="p">))</span>
+
+    <span class="n">unique_top_neighbors</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">top_neighbors</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_top_neighbors</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">G1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="critical_occupation_probability"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.critical_occupation_probability">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">critical_occupation_probability</span><span class="p">(</span><span class="n">G1</span><span class="p">):</span>
+    <span class="n">degree_sequence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">degree</span><span class="p">())[:,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">degree_sequence</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">degree_sequence</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">degree_sequence</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="rich_club_transitivity"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.rich_club_transitivity">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">rich_club_transitivity</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the triad closure percentage between only those nodes with same or higher degree</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nodes_nbrs</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">adj</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+
+    <span class="n">triads</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">triangles</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">degree_lookup</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">())</span>
+
+    <span class="k">for</span> <span class="n">v</span><span class="p">,</span><span class="n">v_nbrs</span> <span class="ow">in</span> <span class="n">nodes_nbrs</span><span class="p">:</span>
+        <span class="n">v_nbrs_degree</span> <span class="o">=</span> <span class="p">[</span><span class="n">vnb</span> <span class="k">for</span> <span class="n">vnb</span> <span class="ow">in</span> <span class="n">v_nbrs</span> <span class="k">if</span> <span class="n">degree_lookup</span><span class="p">[</span><span class="n">vnb</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">degree_lookup</span><span class="p">[</span><span class="n">v</span><span class="p">]]</span>
+        <span class="n">vs</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">v_nbrs_degree</span><span class="p">)</span><span class="o">-</span><span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">])</span> <span class="c1">#getting all the neighbors of the node (so when put in different combinations these could be triads)</span>
+        <span class="n">local_triangles</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">local_triads</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vs</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">local_triads</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c1">#print(&quot;No local triads so skipping&quot;)</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">vs</span><span class="p">:</span>
+            <span class="n">ws</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="p">[</span><span class="n">w</span><span class="p">])</span><span class="o">-</span><span class="nb">set</span><span class="p">([</span><span class="n">w</span><span class="p">])</span> <span class="c1">#gets all the neighbors of a neighbor except itself</span>
+            <span class="n">local_triangles</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vs</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">ws</span><span class="p">))</span> <span class="c1">#finds out how many common neighbors has between itself and main node</span>
+
+        <span class="c1">#print(f&quot;For neuron {v}: Triads = {local_triads/2}, Triangles = {local_triangles/2}, transitivity = {local_triangles/local_triads}&quot;)</span>
+        <span class="n">triads</span> <span class="o">+=</span> <span class="n">local_triads</span> 
+        <span class="n">triangles</span><span class="o">+=</span> <span class="n">local_triangles</span>
+    
+    <span class="c1">#print(f&quot;Total: Triads = {triads/2}, Triangles = {triangles/2}, transitivity = {triangles/triads}&quot;)</span>
+    <span class="k">if</span> <span class="n">triads</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">triangles</span><span class="o">/</span><span class="n">triads</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="c1"># --- Powerlaw stats --- #</span>
+
+
+<div class="viewcode-block" id="get_degree_distribution"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.get_degree_distribution">[docs]</a><span class="k">def</span> <span class="nf">get_degree_distribution</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">())[:,</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="power_law_alpha_sigma"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.power_law_alpha_sigma">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">power_law_alpha_sigma</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="c1">#get the degree distribution</span>
+    <span class="n">power_law_alpha_sigma</span><span class="o">.</span><span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;power_law_alpha&quot;</span><span class="p">,</span>
+                                        <span class="s2">&quot;power_law_sigma&quot;</span><span class="p">]</span>
+    <span class="n">fit</span> <span class="o">=</span> <span class="n">powerlaw</span><span class="o">.</span><span class="n">Fit</span><span class="p">(</span><span class="n">get_degree_distribution</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">fit</span><span class="o">.</span><span class="n">power_law</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">power_law</span><span class="o">.</span><span class="n">sigma</span></div>
+
+<div class="viewcode-block" id="power_law_sigma"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.power_law_sigma">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">power_law_sigma</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="c1">#get the degree distribution</span>
+
+    <span class="n">fit</span> <span class="o">=</span> <span class="n">powerlaw</span><span class="o">.</span><span class="n">Fit</span><span class="p">(</span><span class="n">get_degree_distribution</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">fit</span><span class="o">.</span><span class="n">power_law</span><span class="o">.</span><span class="n">sigma</span></div>
+
+<div class="viewcode-block" id="power_law_alpha"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.power_law_alpha">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">power_law_alpha</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="c1">#get the degree distribution</span>
+
+    <span class="n">fit</span> <span class="o">=</span> <span class="n">powerlaw</span><span class="o">.</span><span class="n">Fit</span><span class="p">(</span><span class="n">get_degree_distribution</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">fit</span><span class="o">.</span><span class="n">power_law</span><span class="o">.</span><span class="n">alpha</span></div>
+
+<div class="viewcode-block" id="power_exp_fit_ratio"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.power_exp_fit_ratio">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">power_exp_fit_ratio</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Will return the loglikelihood ratio of the power and exponential graph</span>
+<span class="sd">    R:</span>
+<span class="sd">    Will be positive if power is more likely</span>
+<span class="sd">            negative    exponential</span>
+<span class="sd">    </span>
+<span class="sd">    p: significance of fit</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#get the degree distribution</span>
+    <span class="n">power_exp_fit_ratio</span><span class="o">.</span><span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;power_exp_LL_ratio&quot;</span><span class="p">,</span>
+                                        <span class="s2">&quot;power_exp_LL_ratio_sign&quot;</span><span class="p">]</span>
+    
+    <span class="n">fit</span> <span class="o">=</span> <span class="n">powerlaw</span><span class="o">.</span><span class="n">Fit</span><span class="p">(</span><span class="n">get_degree_distribution</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+    <span class="n">R</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="n">fit</span><span class="o">.</span><span class="n">distribution_compare</span><span class="p">(</span><span class="s2">&quot;power_law&quot;</span><span class="p">,</span>
+                                                 <span class="s2">&quot;exponential&quot;</span><span class="p">,</span>
+                                                <span class="n">normalized_ratio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">R</span></div>
+
+<div class="viewcode-block" id="trunc_power_stretched_exp_fit_ratio"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.trunc_power_stretched_exp_fit_ratio">[docs]</a><span class="nd">@run_options</span><span class="p">(</span><span class="n">directional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">multiedge</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">trunc_power_stretched_exp_fit_ratio</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Will return the loglikelihood ratio of the power and exponential graph</span>
+<span class="sd">    R:</span>
+<span class="sd">    Will be positive if power is more likely</span>
+<span class="sd">            negative    exponential</span>
+<span class="sd">    </span>
+<span class="sd">    p: significance of fit</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#get the degree distribution</span>
+    <span class="n">trunc_power_stretched_exp_fit_ratio</span><span class="o">.</span><span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;trunc_power_stretched_exp_LL_ratio&quot;</span><span class="p">,</span>
+                                        <span class="s2">&quot;trunc_power_stretched_exp_LL_ratio_sign&quot;</span><span class="p">]</span>
+    
+    <span class="n">fit</span> <span class="o">=</span> <span class="n">powerlaw</span><span class="o">.</span><span class="n">Fit</span><span class="p">(</span><span class="n">get_degree_distribution</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+    <span class="n">R</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="n">fit</span><span class="o">.</span><span class="n">distribution_compare</span><span class="p">(</span><span class="s2">&quot;truncated_power_law&quot;</span><span class="p">,</span>
+                                                 <span class="s2">&quot;stretched_exponential&quot;</span><span class="p">,</span>
+                                                <span class="n">normalized_ratio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">R</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="eig_vals_vecs_from_matrix"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.eig_vals_vecs_from_matrix">[docs]</a><span class="k">def</span> <span class="nf">eig_vals_vecs_from_matrix</span><span class="p">(</span>
+    <span class="n">array</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Eigenvectors are in the columns and </span>
+<span class="sd">    organized in ascending order (so last one is the largest)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">st</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvecs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time for eigenvalue, vector  = </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">st</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvecs</span></div>
+    
+
+<div class="viewcode-block" id="laplacian_eig_vals_vecs"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.laplacian_eig_vals_vecs">[docs]</a><span class="k">def</span> <span class="nf">laplacian_eig_vals_vecs</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">xu</span><span class="o">.</span><span class="n">is_graph</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+        <span class="n">lap</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">laplacian</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lap</span> <span class="o">=</span> <span class="n">G</span>
+    <span class="k">return</span> <span class="n">gs</span><span class="o">.</span><span class="n">eig_vals_vecs_from_matrix</span><span class="p">(</span><span class="n">lap</span><span class="p">,</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="adjacency_eig_vals_vecs"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.adjacency_eig_vals_vecs">[docs]</a><span class="k">def</span> <span class="nf">adjacency_eig_vals_vecs</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">gs</span><span class="o">.</span><span class="n">eig_vals_vecs_from_matrix</span><span class="p">(</span><span class="n">gs</span><span class="o">.</span><span class="n">adjacency</span><span class="p">(</span><span class="n">G</span><span class="p">),</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="eigenvector_centrality"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.eigenvector_centrality">[docs]</a><span class="k">def</span> <span class="nf">eigenvector_centrality</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">eigenvector_centrality</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="betweenness_centrality"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.betweenness_centrality">[docs]</a><span class="k">def</span> <span class="nf">betweenness_centrality</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">endpoints</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">algorithms</span><span class="o">.</span><span class="n">betweenness_centrality</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span>
+        <span class="n">endpoints</span> <span class="o">=</span> <span class="n">endpoints</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="degree_centrality"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.degree_centrality">[docs]</a><span class="k">def</span> <span class="nf">degree_centrality</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Purpose: To compute the degree</span>
+<span class="sd">    centrality for nodes (with an option for weighted)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">nodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+        
+    <span class="n">weight_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">(</span>
+        <span class="n">nodes</span><span class="p">,</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
+    <span class="p">))</span>
+    
+    <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+        <span class="n">total_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">weight_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="n">weight_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span><span class="o">/</span><span class="n">total_weight</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">weight_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        
+    <span class="k">return</span> <span class="n">weight_dict</span></div>
+
+<div class="viewcode-block" id="eigenvector_centrality_numpy"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.eigenvector_centrality_numpy">[docs]</a><span class="k">def</span> <span class="nf">eigenvector_centrality_numpy</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the eigenvector centrality for the graph G.</span>
+
+<span class="sd">    Eigenvector centrality computes the centrality for a node based on the</span>
+<span class="sd">    centrality of its neighbors. The eigenvector centrality for node $i$ is</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        Ax = \lambda x</span>
+
+<span class="sd">    where $A$ is the adjacency matrix of the graph G with eigenvalue $\lambda$.</span>
+<span class="sd">    By virtue of the Perron–Frobenius theorem, there is a unique and positive</span>
+<span class="sd">    solution if $\lambda$ is the largest eigenvalue associated with the</span>
+<span class="sd">    eigenvector of the adjacency matrix $A$ ([2]_).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    G : graph</span>
+<span class="sd">      A networkx graph</span>
+
+<span class="sd">    weight : None or string, optional (default=None)</span>
+<span class="sd">      The name of the edge attribute used as weight.</span>
+<span class="sd">      If None, all edge weights are considered equal.</span>
+<span class="sd">      In this measure the weight is interpreted as the connection strength.</span>
+<span class="sd">    max_iter : integer, optional (default=100)</span>
+<span class="sd">      Maximum number of iterations in power method.</span>
+
+<span class="sd">    tol : float, optional (default=1.0e-6)</span>
+<span class="sd">       Relative accuracy for eigenvalues (stopping criterion).</span>
+<span class="sd">       The default value of 0 implies machine precision.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nodes : dictionary</span>
+<span class="sd">       Dictionary of nodes with eigenvector centrality as the value.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; G = nx.path_graph(4)</span>
+<span class="sd">    &gt;&gt;&gt; centrality = nx.eigenvector_centrality_numpy(G)</span>
+<span class="sd">    &gt;&gt;&gt; print([f&quot;{node} {centrality[node]:0.2f}&quot; for node in centrality])</span>
+<span class="sd">    [&#39;0 0.37&#39;, &#39;1 0.60&#39;, &#39;2 0.60&#39;, &#39;3 0.37&#39;]</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    eigenvector_centrality</span>
+<span class="sd">    pagerank</span>
+<span class="sd">    hits</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The measure was introduced by [1]_.</span>
+
+<span class="sd">    This algorithm uses the SciPy sparse eigenvalue solver (ARPACK) to</span>
+<span class="sd">    find the largest eigenvalue/eigenvector pair.</span>
+
+<span class="sd">    For directed graphs this is &quot;left&quot; eigenvector centrality which corresponds</span>
+<span class="sd">    to the in-edges in the graph. For out-edges eigenvector centrality</span>
+<span class="sd">    first reverse the graph with ``G.reverse()``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NetworkXPointlessConcept</span>
+<span class="sd">        If the graph ``G`` is the null graph.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Phillip Bonacich:</span>
+<span class="sd">       Power and Centrality: A Family of Measures.</span>
+<span class="sd">       American Journal of Sociology 92(5):1170–1182, 1986</span>
+<span class="sd">       http://www.leonidzhukov.net/hse/2014/socialnetworks/papers/Bonacich-Centrality.pdf</span>
+<span class="sd">    .. [2] Mark E. J. Newman:</span>
+<span class="sd">       Networks: An Introduction.</span>
+<span class="sd">       Oxford University Press, USA, 2010, pp. 169.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+    <span class="kn">import</span> <span class="nn">scipy.sparse.linalg</span>  <span class="c1"># call as sp.sparse.linalg</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXPointlessConcept</span><span class="p">(</span>
+            <span class="s2">&quot;cannot compute centrality for the null graph&quot;</span>
+        <span class="p">)</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">to_scipy_sparse_array</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">nodelist</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="p">),</span> <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">eigenvalue</span><span class="p">,</span> <span class="n">eigenvector</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span>
+        <span class="n">M</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LR&quot;</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span>
+    <span class="p">)</span>
+    <span class="n">largest</span> <span class="o">=</span> <span class="n">eigenvector</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">real</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">largest</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">largest</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">largest</span> <span class="o">/</span> <span class="n">norm</span><span class="p">))</span></div>
+
+<span class="c1"># ---- new graph statistics -----</span>
+<div class="viewcode-block" id="local_clustering_coefficients"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.local_clustering_coefficients">[docs]</a><span class="k">def</span> <span class="nf">local_clustering_coefficients</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">clustering</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">nodes</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">modularity_matrix</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">nodelist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">modularity_matrix</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">nodelist</span><span class="o">=</span><span class="n">nodelist</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+    
+    
+<span class="c1"># --- 11/28 ---</span>
+<div class="viewcode-block" id="node_attribute_stat"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.node_attribute_stat">[docs]</a><span class="k">def</span> <span class="nf">node_attribute_stat</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">attribute</span><span class="p">,</span>
+    <span class="n">stat</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>   
+    <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Purpose: To get a summary</span>
+<span class="sd">    statistic of a node</span>
+<span class="sd">    attribute from all nodes</span>
+<span class="sd">    in graph</span>
+
+<span class="sd">    Pseudocode: </span>
+<span class="sd">    1) Get the attribute for all nodes</span>
+<span class="sd">    specified</span>
+<span class="sd">    2) Run the summary statistic</span>
+<span class="sd">    </span>
+<span class="sd">    Ex: </span>
+<span class="sd">    gstat.node_attribute_stat(</span>
+<span class="sd">        G = G_auto,</span>
+<span class="sd">        attribute = &quot;axon_skeletal_length&quot;,</span>
+<span class="sd">        stat = &quot;mean&quot;,</span>
+<span class="sd">        verbose = True,</span>
+<span class="sd">    )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">stat</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">stat</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="p">,</span><span class="n">stat</span><span class="p">)</span>
+
+    <span class="n">attrs</span> <span class="o">=</span> <span class="n">xu</span><span class="o">.</span><span class="n">get_node_attribute_for_all_nodes</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">,</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">,</span>
+    <span class="p">)</span>
+    
+    <span class="n">value</span> <span class="o">=</span> <span class="n">stat</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stat</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="node_attribute_mean"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.node_attribute_mean">[docs]</a><span class="k">def</span> <span class="nf">node_attribute_mean</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">attribute</span><span class="p">,</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>  
+    <span class="p">):</span>
+    
+    <span class="k">return</span> <span class="n">node_attribute_stat</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">attribute</span><span class="p">,</span>
+    <span class="n">stat</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>   
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="node_attribute_median"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.node_attribute_median">[docs]</a><span class="k">def</span> <span class="nf">node_attribute_median</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">attribute</span><span class="p">,</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>  
+    <span class="p">):</span>
+    
+    <span class="k">return</span> <span class="n">node_attribute_stat</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">,</span>
+    <span class="n">attribute</span><span class="p">,</span>
+    <span class="n">stat</span> <span class="o">=</span> <span class="s2">&quot;median&quot;</span><span class="p">,</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>   
+    <span class="p">)</span></div>
+    
+<div class="viewcode-block" id="degree_sequences"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.degree_sequences">[docs]</a><span class="k">def</span> <span class="nf">degree_sequences</span><span class="p">(</span>
+    <span class="n">A</span><span class="p">,</span>
+    <span class="n">return_non_zero_degree_mask</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">filter_away_disconnected_nodes</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+    <span class="n">out_degree_sequence</span> <span class="o">=</span> <span class="n">xu</span><span class="o">.</span><span class="n">out_degree_sequence_from_adj</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">in_degree_sequence</span> <span class="o">=</span> <span class="n">xu</span><span class="o">.</span><span class="n">in_degree_sequence_from_adj</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">filter_away_disconnected_nodes</span><span class="p">:</span>
+        <span class="n">good_map</span> <span class="o">=</span> <span class="p">(</span><span class="n">out_degree_sequence</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">in_degree_sequence</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">in_degree_sequence</span> <span class="o">=</span> <span class="n">in_degree_sequence</span><span class="p">[</span><span class="n">good_map</span><span class="p">]</span>
+        <span class="n">out_degree_sequence</span> <span class="o">=</span> <span class="n">out_degree_sequence</span><span class="p">[</span><span class="n">good_map</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">good_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    
+    <span class="n">return_value</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_degree_sequence</span><span class="p">,</span><span class="n">out_degree_sequence</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">return_non_zero_degree_mask</span><span class="p">:</span>
+        <span class="n">return_value</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">good_map</span><span class="p">)</span> 
+        
+    <span class="k">return</span> <span class="n">return_value</span></div>
+
+
+<div class="viewcode-block" id="n_reciprocal"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.n_reciprocal">[docs]</a><span class="k">def</span> <span class="nf">n_reciprocal</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">((</span><span class="n">A</span><span class="o">+</span><span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="reciprocity"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.reciprocity">[docs]</a><span class="k">def</span> <span class="nf">reciprocity</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">A</span><span class="o">+</span><span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="sparsity"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.sparsity">[docs]</a><span class="k">def</span> <span class="nf">sparsity</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span></div>
+
+    
+<div class="viewcode-block" id="n_edges_from_A"><a class="viewcode-back" href="../../graph_tools.html#graph_tools.graph_statistics.n_edges_from_A">[docs]</a><span class="k">def</span> <span class="nf">n_edges_from_A</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
+
+<span class="c1">#--- from graph_tools ---</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">graph_visualizations</span> <span class="k">as</span> <span class="n">gviz</span>
+
+<span class="c1">#--- from datasci_tools ---</span>
+<span class="kn">from</span> <span class="nn">datasci_tools</span> <span class="kn">import</span> <span class="n">networkx_utils</span> <span class="k">as</span> <span class="n">xu</span>
+
+<span class="n">adjacency_matrix</span> <span class="o">=</span> <span class="n">xu</span><span class="o">.</span><span class="n">adjacency_matrix</span>
+<span class="n">modularity_matrix</span> <span class="o">=</span> <span class="n">xu</span><span class="o">.</span><span class="n">modularity_matrix</span>
+<span class="n">laplacian</span> <span class="o">=</span> <span class="n">xu</span><span class="o">.</span><span class="n">laplacian</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">graph_statistics</span> <span class="k">as</span> <span class="n">gs</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Brendan Celii.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
