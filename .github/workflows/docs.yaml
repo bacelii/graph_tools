@@ -33,6 +33,11 @@ jobs:
         run: |
           python3 -m pip install -r ./requirements.txt
 
+      - name: Add any new modules
+        run: |
+          rm docs/${{ github.event.repository.name }}.rst
+          sphinx-apidoc -o docs ${{ github.event.repository.name }}/
+
       - name: Build docs
         run: |
           cd docs
